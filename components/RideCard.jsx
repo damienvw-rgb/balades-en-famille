@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getActivity, formatPlace } from "@/lib/activities";
-import Participants from "@/components/Participants";
 
 export default function RideCard({ ride }) {
   const activity = getActivity(ride.activity);
@@ -16,12 +15,19 @@ export default function RideCard({ ride }) {
         {ride.stageCount > 1 && (
           <span className="stage-badge">{ride.stageCount} étapes</span>
         )}
-        <Participants participants={ride.participants} className="on-light" />
       </div>
 
       {place && <span className="region">{place}</span>}
       <h2>{ride.title}</h2>
-      {ride.description && <p className="desc">{ride.description}</p>}
+
+      {ride.description && (
+        <p className="desc">
+          {ride.description}
+          {ride.descriptionTruncated && (
+            <span className="desc-more"> Lire la suite</span>
+          )}
+        </p>
+      )}
 
       <div className="stat-row">
         <div>

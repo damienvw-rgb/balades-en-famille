@@ -2,29 +2,30 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { getActivity, formatPlace } from "@/lib/activities";
+import ThemeToggle from "@/components/ThemeToggle";
+import { callApi, postJson } from "@/lib/api";
 
 export default function Admin() {
-  const [auth, setAuth] = useState({ checked: false, ok: false, configured: true });
+  const [auth, setAuth] = useState({ checked: false, ok: false, configured: true, missing: [] });
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("/api/admin/login")
-      .then((r) => r.json())
-      .then((d) => setAuth({ checked: true, ok: d.authenticated, configured: d.configured }))
-      .catch(() => setAuth({ checked: true, ok: false, configured: true }));
+    callApi("/api/admin/login").then(({ ok, data }) =>
+      setAuth({
+        checked: true,
+        ok: Boolean(data.authenticated),
+        configured: ok ? data.configured : false,
+        missing: data.missing || (ok ? [] : ["(réponse serveur illisible)"]),
+      })
+    );
   }, []);
 
   const login = async (e) => {
     e.preventDefault();
     setError(null);
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    const data = await res.json();
-    if (!res.ok) return setError(data.error);
+    const { ok, data } = await postJson("/api/admin/login", { password });
+    if (!ok) return setError(data.error || "Connexion impossible.");
     setAuth((a) => ({ ...a, ok: true }));
     setPassword("");
   };
@@ -44,17 +45,31 @@ export default function Admin() {
       </Head>
 
       <div className="container narrow">
-        <Link href="/" className="back-link">← Retour au carnet</Link>
+        <div className="page-top">
+          <Link href="/" className="back-link">← Retour au carnet</Link>
+          <ThemeToggle />
+        </div>
 
-        <header className="site-header">
-          <h1>Administration</h1>
+        <header className="site-header compact">
+          <div className="header-main"><h1>Administration</h1></div>
         </header>
 
         {!auth.configured ? (
-          <p className="empty-state">
-            La variable ADMIN_PASSWORD n'est pas définie sur le serveur.
-            Ajoute-la dans Vercel puis redéploie.
-          </p>
+          <div className="empty-state">
+            <p>
+              Il manque {auth.missing.length > 1 ? "des variables" : "une variable"} d'environnement
+              côté serveur :
+            </p>
+            <ul className="admin-missing">
+              {auth.missing.map((name) => <li key={name}><code>{name}</code></li>)}
+            </ul>
+            <p>
+              Ajoute-{auth.missing.length > 1 ? "les" : "la"} dans Vercel (Settings →
+              Environment Variables), puis <strong>relance un déploiement</strong> :
+              les variables ne s'appliquent qu'au déploiement suivant, c'est la
+              cause la plus fréquente.
+            </p>
+          </div>
         ) : !auth.ok ? (
           <form className="submit-form" onSubmit={login}>
             <label className="field">
@@ -71,6 +86,7 @@ export default function Admin() {
               <button type="button" className="link-button" onClick={logout}>Se déconnecter</button>
             </div>
             <Submissions />
+            <Messages />
             <CommentModeration />
           </>
         )}
@@ -85,25 +101,17 @@ function Submissions() {
   const [notice, setNotice] = useState(null);
 
   const load = () =>
-    fetch("/api/admin/submissions")
-      .then((r) => r.json())
-      .then((d) => setItems(d.submissions || []))
-      .catch(() => setItems([]));
+    callApi("/api/admin/submissions").then(({ data }) => setItems(data.submissions || []));
 
   useEffect(() => { load(); }, []);
 
   const act = async (submissionId, action, extra = {}) => {
     setBusy(submissionId);
     setNotice(null);
-    const res = await fetch("/api/admin/submissions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, submissionId, ...extra }),
-    });
-    const data = await res.json();
+    const { ok, data } = await postJson("/api/admin/submissions", { action, submissionId, ...extra });
     setBusy(null);
 
-    if (res.ok && action === "approve") {
+    if (ok && action === "approve") {
       setNotice(
         data.rebuild?.triggered
           ? "Sortie approuvée. Le site se reconstruit, elle sera en ligne dans une minute ou deux."
@@ -200,19 +208,12 @@ function CommentModeration() {
   const [items, setItems] = useState(null);
 
   const load = () =>
-    fetch("/api/admin/comments")
-      .then((r) => r.json())
-      .then((d) => setItems(d.comments || []))
-      .catch(() => setItems([]));
+    callApi("/api/admin/comments").then(({ data }) => setItems(data.comments || []));
 
   useEffect(() => { load(); }, []);
 
   const act = async (comment, action) => {
-    await fetch("/api/admin/comments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, ride: comment.ride, commentId: comment.id }),
-    });
+    await postJson("/api/admin/comments", { action, ride: comment.ride, commentId: comment.id });
     load();
   };
 
@@ -242,6 +243,59 @@ function CommentModeration() {
               </button>
             )}
             <button type="button" className="button-secondary" onClick={() => act(c, "delete")}>
+              Supprimer
+            </button>
+          </div>
+        </article>
+      ))}
+    </section>
+  );
+}
+
+function Messages() {
+  const [items, setItems] = useState(null);
+
+  const load = () =>
+    fetch("/api/admin/messages")
+      .then((r) => r.json())
+      .then((d) => setItems(d.messages || []))
+      .catch(() => setItems([]));
+
+  useEffect(() => { load(); }, []);
+
+  const remove = async (messageId) => {
+    await fetch("/api/admin/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "delete", messageId }),
+    });
+    load();
+  };
+
+  if (items === null) return null;
+
+  return (
+    <section className="admin-section">
+      <h2 className="section-title">Messages de contact ({items.length})</h2>
+      {items.length === 0 && <p className="comment-empty">Aucun message.</p>}
+
+      {items.map((m) => (
+        <article className="admin-card" key={m.id}>
+          <div className="comment-head">
+            <span className="comment-pseudo">{m.subjectLabel}</span>
+            <time className="comment-date">
+              {new Date(m.createdAt).toLocaleDateString("fr-BE")}
+            </time>
+          </div>
+          <p className="admin-meta">
+            {m.name || "sans nom"} · {m.email}
+          </p>
+          <p className="comment-body">{m.body}</p>
+          <div className="admin-actions">
+            <a className="button-secondary" href={`mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subjectLabel)}`}>
+              Répondre
+            </a>
+            <button type="button" className="button-secondary" onClick={() => remove(m.id)}>
               Supprimer
             </button>
           </div>

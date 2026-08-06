@@ -6,17 +6,39 @@
   "region": "Eifel",
   "difficulty": "Modérée",
   "description": "Exemple de sortie à PLUSIEURS ÉTAPES. Deux jours de marche avec une nuit en bivouac, chaque étape a sa couleur sur la carte et son propre profil d'altitude.",
-  "tags": ["bivouac", "exemple"],
+  "tags": [
+    "bivouac",
+    "exemple"
+  ],
   "participants": {
-    "adults": [41, 39],
-    "children": [11, 13, 15]
+    "adults": 2,
+    "children": [
+      11,
+      13,
+      15
+    ]
   },
   "gear": [
-    { "emoji": "🎒", "label": "Sacs 45 L" },
-    { "emoji": "⛺", "label": "Tente 3 places" },
-    { "emoji": "🔥", "label": "Réchaud à gaz" },
-    "Filtre à eau",
-    "Bâtons de marche"
+    {
+      "emoji": "🎒",
+      "label": "Sacs 45 L"
+    },
+    {
+      "emoji": "⛺",
+      "label": "Tente 3 places"
+    },
+    {
+      "emoji": "🔥",
+      "label": "Réchaud à gaz"
+    },
+    {
+      "emoji": "💧",
+      "label": "Filtre à eau"
+    },
+    {
+      "emoji": "🥢",
+      "label": "Bâtons de marche"
+    }
   ],
   "stages": [
     {
@@ -24,8 +46,8 @@
       "title": "Jour 1 : montée vers le plateau",
       "description": "Départ tranquille le long de la rivière, puis la montée s'accentue dans les derniers kilomètres.",
       "lodging": {
-        "type": "bivouac",
-        "text": "Zone de bivouac du plateau, sans eau sur place, prévoir les gourdes pleines au départ."
+        "type": "wtmg",
+        "text": "Jardin trouvé via Welcome To My Garden, accueil très sympa"
       }
     },
     {

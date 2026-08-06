@@ -2,12 +2,50 @@ import { id, saveSubmission, slugify } from "@/lib/store";
 import { sendMail, siteUrl, usingSmtp } from "@/lib/mailer";
 import { createToken } from "@/lib/tokens";
 import { inspectContent, checkRateLimit, clientIp, SPAM_MESSAGES } from "@/lib/spam";
+import { checkIdentity } from "@/lib/identity";
+import { gearEmoji, ACTIVITIES, DIFFICULTIES } from "@/lib/activities";
 import { parseGpx } from "@/lib/gpx";
 
 export const config = { api: { bodyParser: { sizeLimit: "8mb" } } };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MAX_STAGES = 12;
+
+/** { adults: 2, children: [8, 11], childrenCount: 3 } vers la forme du site. */
+function normalizeParticipants(raw) {
+  if (!raw) return null;
+  const adults = Math.max(0, Math.min(12, parseInt(raw.adults, 10) || 0));
+
+  const ages = Array.isArray(raw.children)
+    ? raw.children
+        .map((a) => parseInt(a, 10))
+        .filter((n) => Number.isFinite(n) && n >= 0 && n <= 25)
+    : [];
+  const declared = Math.max(0, Math.min(12, parseInt(raw.childrenCount, 10) || 0));
+  const childrenCount = Math.max(declared, ages.length);
+
+  if (adults === 0 && childrenCount === 0) return null;
+
+  const out = {};
+  if (adults > 0) out.adults = adults;
+  // Les âges ne sont conservés que s'ils sont tous renseignés, sinon on ne
+  // garde que le nombre : mieux vaut pas d'âge du tout qu'une liste incomplète.
+  if (childrenCount > 0) {
+    out.children = ages.length === childrenCount ? ages : childrenCount;
+  }
+  return out;
+}
+
+/** Chaque ligne saisie reçoit son pictogramme, déduit de son intitulé. */
+function normalizeGear(raw) {
+  if (!Array.isArray(raw)) return null;
+  const items = raw
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean)
+    .slice(0, 20)
+    .map((label) => ({ emoji: gearEmoji(label), label }));
+  return items.length > 0 ? items : null;
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -26,10 +64,22 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Donne un titre à ta sortie." });
   }
 
-  const author = String(b.author || "").trim().slice(0, 40);
-  if (author.length < 2) {
-    return res.status(400).json({ error: "Choisis un pseudo d'au moins 2 caractères." });
+  const activity = String(b.activity || "").trim().toLowerCase();
+  if (!activity || !ACTIVITIES[activity]) {
+    return res.status(400).json({ error: "Choisis un type d'activité." });
   }
+
+  const country = String(b.country || "").trim();
+  if (country.length < 2) {
+    return res.status(400).json({ error: "Le pays est obligatoire." });
+  }
+
+  // Un pseudo appartient à une adresse, sur tout le site
+  const identity = await checkIdentity(b.author, b.authorEmail);
+  if (!identity.ok) {
+    return res.status(409).json({ error: identity.error, suggestion: identity.suggestion });
+  }
+  const author = identity.pseudo;
 
   const verdict = inspectContent({
     body: `${title} ${b.description || ""}`,
@@ -64,57 +114,57 @@ export default async function handler(req, res) {
     } catch {
       return res.status(400).json({ error: `Fichier GPX illisible à l'étape ${i + 1}.` });
     }
-
     if (parsed.points.length < 2) {
       return res.status(400).json({ error: `Trace trop courte à l'étape ${i + 1}.` });
     }
 
+    const declaredTitle = String(stage.title || "").trim().slice(0, 120);
+
     stages.push({
       file: `etape-${i + 1}.gpx`,
-      title: String(stage.title || "").trim().slice(0, 120) || (rawStages.length > 1 ? `Étape ${i + 1}` : ""),
+      title: declaredTitle || (rawStages.length > 1 ? `Étape ${i + 1}` : ""),
       description: String(stage.description || "").trim().slice(0, 2000),
-      lodging: stage.lodgingType || stage.lodgingText
-        ? {
-            type: String(stage.lodgingType || "").trim() || null,
-            text: String(stage.lodgingText || "").trim().slice(0, 500) || null,
-          }
-        : null,
+      lodging:
+        stage.lodgingType || stage.lodgingText
+          ? {
+              type: String(stage.lodgingType || "").trim() || null,
+              text: String(stage.lodgingText || "").trim().slice(0, 500) || null,
+            }
+          : null,
       gpx,
-      // Calculé côté serveur pour l'aperçu de modération
       distanceKm: parsed.distanceKm,
       elevationGain: parsed.elevationGain,
     });
   }
 
+  const difficulty = String(b.difficulty || "").trim();
+
   const submission = {
     id: id(),
-    // Tant que l'auteur n'a pas confirmé son adresse, la proposition n'entre
-    // pas dans la file de modération : tu ne vois donc jamais les faux envois.
+    // Tant que l'adresse n'est pas confirmée, la proposition n'entre pas dans
+    // la file de modération : les faux envois ne sont jamais vus.
     status: "unverified",
     createdAt: new Date().toISOString(),
     slug: slugify(title),
     author,
-    // Jamais affiché publiquement : sert à notifier l'auteur des commentaires.
     authorEmail: String(b.authorEmail).trim().toLowerCase(),
     info: {
       title,
-      activity: String(b.activity || "velo").trim(),
+      activity,
       date: String(b.date || "").trim() || null,
-      country: String(b.country || "").trim() || null,
+      country,
       region: String(b.region || "").trim() || null,
-      difficulty: String(b.difficulty || "").trim() || null,
+      difficulty: DIFFICULTIES.includes(difficulty) ? difficulty : null,
       description: String(b.description || "").trim().slice(0, 3000),
-      participants: b.participants || null,
-      gear: Array.isArray(b.gear) ? b.gear.filter(Boolean).slice(0, 20) : null,
+      participants: normalizeParticipants(b.participants),
+      gear: normalizeGear(b.gear),
     },
     stages,
   };
 
   await saveSubmission(submission);
 
-  const totalKm =
-    Math.round(stages.reduce((s, x) => s + x.distanceKm, 0) * 10) / 10;
-
+  const totalKm = Math.round(stages.reduce((s, x) => s + x.distanceKm, 0) * 10) / 10;
   const token = createToken({ kind: "submission", id: submission.id });
   const link = `${siteUrl()}/api/submissions/verify?token=${encodeURIComponent(token)}`;
 
@@ -134,8 +184,7 @@ export default async function handler(req, res) {
       "Ton adresse ne sera jamais affichée sur le site. Elle sert à te prévenir",
       "de la publication et des commentaires que ta sortie recevra.",
       "",
-      "Si tu n'es pas à l'origine de cet envoi, ignore ce message : sans",
-      "confirmation, la proposition ne sera pas transmise.",
+      "Si tu n'es pas à l'origine de cet envoi, ignore ce message.",
     ].join("\n"),
   });
 

@@ -1,22 +1,9 @@
 import { getActivity } from "@/lib/activities";
 
-function Pill({ active, onClick, children }) {
-  return (
-    <button
-      type="button"
-      className={`filter-pill${active ? " is-active" : ""}`}
-      aria-pressed={active}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
-
 /**
- * Deux filtres cumulatifs : type d'activité et pays.
- * Les options proposées sont uniquement celles réellement présentes dans les
- * sorties publiées, donc pas de "Ski" tant qu'aucune sortie n'est du ski.
+ * Deux listes déroulantes sur une seule ligne, pour laisser la place au
+ * contenu. Les options proposées sont uniquement celles réellement présentes
+ * dans les sorties publiées.
  */
 export default function Filters({
   activities,
@@ -28,7 +15,6 @@ export default function Filters({
   resultCount,
   totalCount,
 }) {
-  // Un filtre à une seule valeur possible ne sert à rien
   const showActivities = activities.length > 1;
   const showCountries = countries.length > 1;
   if (!showActivities && !showCountries) return null;
@@ -38,63 +24,55 @@ export default function Filters({
   return (
     <div className="filters">
       {showActivities && (
-        <div className="filter-row">
-          <span className="filter-label" id="filter-activity">Activité</span>
-          <div className="filter-pills" role="group" aria-labelledby="filter-activity">
-            <Pill active={activity === null} onClick={() => onActivityChange(null)}>
-              Toutes
-            </Pill>
+        <label className="filter-select">
+          <span className="sr-only">Filtrer par activité</span>
+          <select
+            value={activity || ""}
+            onChange={(e) => onActivityChange(e.target.value || null)}
+          >
+            <option value="">Toutes les activités</option>
             {activities.map((key) => {
               const meta = getActivity(key);
               return (
-                <Pill
-                  key={key}
-                  active={activity === key}
-                  onClick={() => onActivityChange(activity === key ? null : key)}
-                >
-                  <span aria-hidden="true">{meta.emoji}</span>
-                  {meta.label}
-                </Pill>
+                <option key={key} value={key}>
+                  {meta.emoji} {meta.label}
+                </option>
               );
             })}
-          </div>
-        </div>
+          </select>
+        </label>
       )}
 
       {showCountries && (
-        <div className="filter-row">
-          <span className="filter-label" id="filter-country">Pays</span>
-          <div className="filter-pills" role="group" aria-labelledby="filter-country">
-            <Pill active={country === null} onClick={() => onCountryChange(null)}>
-              Tous
-            </Pill>
+        <label className="filter-select">
+          <span className="sr-only">Filtrer par pays</span>
+          <select
+            value={country || ""}
+            onChange={(e) => onCountryChange(e.target.value || null)}
+          >
+            <option value="">Tous les pays</option>
             {countries.map((name) => (
-              <Pill
-                key={name}
-                active={country === name}
-                onClick={() => onCountryChange(country === name ? null : name)}
-              >
-                {name}
-              </Pill>
+              <option key={name} value={name}>{name}</option>
             ))}
-          </div>
-        </div>
+          </select>
+        </label>
       )}
 
+      <span className="filter-count" aria-live="polite">
+        {filtering ? `${resultCount} / ${totalCount}` : `${totalCount} sorties`}
+      </span>
+
       {filtering && (
-        <p className="filter-summary" aria-live="polite">
-          {resultCount} sortie{resultCount > 1 ? "s" : ""} sur {totalCount}
-          <button
-            type="button"
-            className="filter-reset"
-            onClick={() => {
-              onActivityChange(null);
-              onCountryChange(null);
-            }}
-          >
-            Tout afficher
-          </button>
-        </p>
+        <button
+          type="button"
+          className="filter-reset"
+          onClick={() => {
+            onActivityChange(null);
+            onCountryChange(null);
+          }}
+        >
+          Réinitialiser
+        </button>
       )}
     </div>
   );

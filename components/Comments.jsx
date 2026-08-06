@@ -4,30 +4,24 @@ import Link from "next/link";
 function formatDate(iso) {
   try {
     return new Date(iso).toLocaleDateString("fr-BE", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+      day: "numeric", month: "long", year: "numeric",
     });
   } catch {
     return "";
   }
 }
 
-/**
- * Fil de commentaires d'une sortie.
- * Les commentaires liés à une étape sont regroupés sous celle-ci, les autres
- * sont rattachés à la sortie dans son ensemble.
- */
 export default function Comments({ ride, stages = [] }) {
   const [comments, setComments] = useState(null);
   const [error, setError] = useState(null);
+  const [replyTo, setReplyTo] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   const load = async () => {
     try {
       const res = await fetch(`/api/comments?ride=${encodeURIComponent(ride)}`);
       if (!res.ok) throw new Error();
-      const data = await res.json();
-      setComments(data.comments);
+      setComments((await res.json()).comments);
     } catch {
       setError("Les commentaires n'ont pas pu être chargés.");
     }
@@ -38,15 +32,15 @@ export default function Comments({ ride, stages = [] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ride]);
 
-  const byStage = useMemo(() => {
-    const map = { __ride__: [] };
-    for (const s of stages) map[s.title || s.file] = [];
-    for (const c of comments || []) {
-      const key = c.stage && map[c.stage] ? c.stage : "__ride__";
-      map[key].push(c);
-    }
-    return map;
-  }, [comments, stages]);
+  // Les réponses se rangent sous leur message d'origine
+  const threads = useMemo(() => {
+    const roots = (comments || []).filter((c) => !c.parentId);
+    const replies = (comments || []).filter((c) => c.parentId);
+    return roots.map((root) => ({
+      ...root,
+      replies: replies.filter((r) => r.parentId === root.id),
+    }));
+  }, [comments]);
 
   const total = comments?.length ?? 0;
 
@@ -61,89 +55,125 @@ export default function Comments({ ride, stages = [] }) {
 
       {comments !== null && (
         <>
-          <Thread comments={byStage.__ride__} />
-
-          {stages.length > 1 &&
-            stages.map((s) => {
-              const key = s.title || s.file;
-              const list = byStage[key] || [];
-              if (list.length === 0) return null;
-              return (
-                <div className="comment-stage-group" key={key}>
-                  <h3 className="comment-stage-title">
-                    <span className="stage-dot" style={{ background: s.color }} aria-hidden="true" />
-                    {key}
-                  </h3>
-                  <Thread comments={list} />
-                </div>
-              );
-            })}
-
-          {total === 0 && (
+          {threads.length === 0 && (
             <p className="comment-empty">
               Aucun commentaire pour l'instant. Tu peux être le premier.
             </p>
           )}
+
+          <ul className="comment-list">
+            {threads.map((thread) => (
+              <li key={thread.id}>
+                <Comment comment={thread} onReply={() => { setReplyTo(thread); setShowForm(true); }} />
+
+                {thread.replies.length > 0 && (
+                  <ul className="comment-replies">
+                    {thread.replies.map((r) => (
+                      <li key={r.id}>
+                        <Comment
+                          comment={r}
+                          isReply
+                          onReply={() => { setReplyTo(thread); setShowForm(true); }}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
         </>
       )}
 
-      <CommentForm ride={ride} stages={stages} onSent={load} />
+      {showForm ? (
+        <CommentForm
+          ride={ride}
+          stages={stages}
+          replyTo={replyTo}
+          onCancel={() => { setShowForm(false); setReplyTo(null); }}
+          onSent={load}
+        />
+      ) : (
+        <button type="button" className="button-primary" onClick={() => setShowForm(true)}>
+          Laisser un commentaire
+        </button>
+      )}
     </section>
   );
 }
 
-function Thread({ comments }) {
-  if (!comments || comments.length === 0) return null;
+function Comment({ comment, isReply = false, onReply }) {
   return (
-    <ul className="comment-list">
-      {comments.map((c) => (
-        <li className="comment" key={c.id}>
-          <div className="comment-head">
-            <span className="comment-pseudo">{c.pseudo}</span>
-            <time className="comment-date" dateTime={c.createdAt}>
-              {formatDate(c.createdAt)}
-            </time>
-          </div>
-          <p className="comment-body">{c.body}</p>
-        </li>
-      ))}
-    </ul>
+    <article className={`comment${isReply ? " is-reply" : ""}`}>
+      <div className="comment-head">
+        <span className="comment-pseudo">{comment.pseudo}</span>
+        {comment.stage && !isReply && (
+          <span className="comment-stage-tag">{comment.stage}</span>
+        )}
+        <time className="comment-date" dateTime={comment.createdAt}>
+          {formatDate(comment.createdAt)}
+        </time>
+      </div>
+      <p className="comment-body">{comment.body}</p>
+      <button type="button" className="link-button" onClick={onReply}>
+        Répondre
+      </button>
+    </article>
   );
 }
 
-function CommentForm({ ride, stages, onSent }) {
+function CommentForm({ ride, stages, replyTo, onCancel, onSent }) {
   const renderedAt = useRef(Date.now());
   const [form, setForm] = useState({
-    pseudo: "",
-    email: "",
-    body: "",
-    stage: "",
-    honeypot: "",
+    pseudo: "", email: "", body: "", stage: "", honeypot: "",
   });
+  const [identity, setIdentity] = useState(null);
   const [state, setState] = useState({ status: "idle", message: null });
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
+  // Cohérence pseudo / email vérifiée pendant la saisie, sans attendre l'envoi
+  useEffect(() => {
+    if (!form.pseudo || !form.email.includes("@")) {
+      setIdentity(null);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/identity/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pseudo: form.pseudo, email: form.email }),
+        });
+        const data = await res.json();
+        setIdentity(data.ok ? null : data);
+      } catch {
+        setIdentity(null);
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [form.pseudo, form.email]);
+
   const submit = async (e) => {
     e.preventDefault();
     setState({ status: "sending", message: null });
-
     try {
       const res = await fetch("/api/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, ride, renderedAt: renderedAt.current }),
+        body: JSON.stringify({
+          ...form,
+          ride,
+          parentId: replyTo?.id || null,
+          renderedAt: renderedAt.current,
+        }),
       });
       const data = await res.json();
-
       if (!res.ok) {
         setState({ status: "error", message: data.error || "Envoi impossible." });
         return;
       }
-
       setState({ status: "sent", message: data.message });
-      setForm({ pseudo: "", email: "", body: "", stage: "", honeypot: "" });
-      renderedAt.current = Date.now();
       onSent?.();
     } catch {
       setState({ status: "error", message: "Envoi impossible, réessaie plus tard." });
@@ -154,56 +184,57 @@ function CommentForm({ ride, stages, onSent }) {
     return (
       <div className="comment-form-done">
         <p>{state.message}</p>
-        <button
-          type="button"
-          className="link-button"
-          onClick={() => setState({ status: "idle", message: null })}
-        >
-          Écrire un autre commentaire
-        </button>
+        <button type="button" className="link-button" onClick={onCancel}>Fermer</button>
       </div>
     );
   }
 
   return (
     <form className="comment-form" onSubmit={submit}>
-      <h3>Laisser un commentaire</h3>
+      <div className="comment-form-head">
+        <h3>{replyTo ? `Répondre à ${replyTo.pseudo}` : "Laisser un commentaire"}</h3>
+        <button type="button" className="link-button" onClick={onCancel}>Annuler</button>
+      </div>
+
+      {replyTo && (
+        <p className="reply-context">
+          En réponse à : <em>{replyTo.body.slice(0, 120)}{replyTo.body.length > 120 ? "…" : ""}</em>
+        </p>
+      )}
 
       <div className="field-row">
         <label className="field">
           <span>Pseudo</span>
-          <input
-            type="text"
-            value={form.pseudo}
-            onChange={set("pseudo")}
-            required
-            minLength={2}
-            maxLength={40}
-            placeholder="Comment veux-tu apparaître ?"
-          />
+          <input type="text" value={form.pseudo} onChange={set("pseudo")}
+            required minLength={2} maxLength={40} placeholder="Comment veux-tu apparaître ?" />
         </label>
 
         <label className="field">
           <span>Email</span>
-          <input
-            type="email"
-            value={form.email}
-            onChange={set("email")}
-            required
-            placeholder="pour confirmer, jamais affiché"
-          />
+          <input type="email" value={form.email} onChange={set("email")}
+            required placeholder="pour confirmer, jamais affiché" />
         </label>
       </div>
 
-      {stages.length > 1 && (
+      {identity && (
+        <p className="identity-warning">
+          {identity.error}
+          {identity.suggestion && (
+            <button type="button" className="link-button"
+              onClick={() => setForm((f) => ({ ...f, pseudo: identity.suggestion }))}>
+              Utiliser « {identity.suggestion} »
+            </button>
+          )}
+        </p>
+      )}
+
+      {!replyTo && stages.length > 1 && (
         <label className="field">
           <span>À propos de</span>
           <select value={form.stage} onChange={set("stage")}>
             <option value="">La sortie dans son ensemble</option>
             {stages.map((s) => (
-              <option key={s.file} value={s.title || s.file}>
-                {s.title || s.file}
-              </option>
+              <option key={s.file} value={s.title || s.file}>{s.title || s.file}</option>
             ))}
           </select>
         </label>
@@ -211,41 +242,28 @@ function CommentForm({ ride, stages, onSent }) {
 
       <label className="field">
         <span>Message</span>
-        <textarea
-          value={form.body}
-          onChange={set("body")}
-          required
-          rows={5}
-          maxLength={4000}
-          placeholder="Ton retour, une question, un conseil…"
-        />
+        <textarea value={form.body} onChange={set("body")} required rows={5} maxLength={4000}
+          placeholder="Ton retour, une question, un conseil…" />
       </label>
 
-      {/* Champ piège : masqué à l'écran, seuls les robots le remplissent */}
       <div className="honeypot" aria-hidden="true">
         <label>
           Ne pas remplir
-          <input
-            type="text"
-            tabIndex={-1}
-            autoComplete="off"
-            value={form.honeypot}
-            onChange={set("honeypot")}
-          />
+          <input type="text" tabIndex={-1} autoComplete="off"
+            value={form.honeypot} onChange={set("honeypot")} />
         </label>
       </div>
 
-      {state.message && state.status === "error" && (
-        <p className="comment-error">{state.message}</p>
-      )}
+      {state.status === "error" && <p className="comment-error">{state.message}</p>}
 
       <div className="form-actions">
-        <button type="submit" className="button-primary" disabled={state.status === "sending"}>
+        <button type="submit" className="button-primary"
+          disabled={state.status === "sending" || Boolean(identity)}>
           {state.status === "sending" ? "Envoi…" : "Envoyer"}
         </button>
         <p className="field-note">
-          Tu recevras un email pour confirmer. Ton adresse ne sera jamais publiée
-          ni transmise, elle sert uniquement à cette confirmation.{" "}
+          Tu recevras un email pour confirmer. Ton adresse ne sera jamais publiée.
+          Elle sert à cette confirmation et à te prévenir des réponses.{" "}
           <Link href="/mentions-legales">En savoir plus</Link>
         </p>
       </div>

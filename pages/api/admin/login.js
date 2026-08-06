@@ -1,9 +1,16 @@
-import { checkPassword, sessionCookie, clearCookie, adminConfigured, isAdmin } from "@/lib/admin";
+import { checkPassword, sessionCookie, clearCookie, adminConfigured, isAdmin, missingConfig } from "@/lib/admin";
+import { secretConfigured } from "@/lib/tokens";
 import { checkRateLimit, clientIp, SPAM_MESSAGES } from "@/lib/spam";
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
-    return res.status(200).json({ authenticated: isAdmin(req), configured: adminConfigured() });
+    // Le diagnostic sert à comprendre tout de suite ce qui manque côté serveur,
+    // sans avoir à fouiller les logs Vercel.
+    return res.status(200).json({
+      authenticated: isAdmin(req),
+      configured: adminConfigured(),
+      missing: missingConfig(),
+    });
   }
 
   if (req.method === "DELETE") {
@@ -17,7 +24,17 @@ export default async function handler(req, res) {
   }
 
   if (!adminConfigured()) {
-    return res.status(503).json({ error: "ADMIN_PASSWORD n'est pas configuré sur le serveur." });
+    return res.status(503).json({
+      error: "ADMIN_PASSWORD n'est pas défini sur le serveur. Ajoute-le dans Vercel puis relance un déploiement.",
+    });
+  }
+
+  // Sans APP_SECRET, la session ne peut pas être signée : mieux vaut le dire
+  // que d'échouer sans message.
+  if (!secretConfigured()) {
+    return res.status(503).json({
+      error: "APP_SECRET n'est pas défini sur le serveur. Ajoute-le dans Vercel puis relance un déploiement (les variables ne s'appliquent qu'au déploiement suivant).",
+    });
   }
 
   // Limite les tentatives de mot de passe
@@ -28,6 +45,10 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: "Mot de passe incorrect." });
   }
 
-  res.setHeader("Set-Cookie", sessionCookie());
+  try {
+    res.setHeader("Set-Cookie", sessionCookie());
+  } catch (err) {
+    return res.status(500).json({ error: `Session impossible à créer : ${err.message}` });
+  }
   return res.status(200).json({ ok: true });
 }
