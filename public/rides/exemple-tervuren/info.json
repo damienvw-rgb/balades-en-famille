@@ -1,8 +1,20 @@
 {
-  "title": "Boucle d'exemple autour de Tervuren",
+  "title": "Boucle du Warandepark",
+  "activity": "velo",
   "date": "2026-05-10",
+  "country": "Belgique",
   "region": "Brabant flamand",
   "difficulty": "Facile",
-  "description": "Ceci est une balade d'exemple pour te montrer le format attendu. Remplace ce dossier par tes propres balades : un fichier route.gpx (exporté de Komoot, Strava ou ton GPS) et un info.json avec les mêmes champs.",
-  "tags": ["famille", "forêt", "exemple"]
+  "description": "Exemple de sortie à UNE SEULE trace. Petite boucle sans difficulté autour des étangs, praticable avec de jeunes enfants.",
+  "tags": ["famille", "forêt", "exemple"],
+  "participants": {
+    "adults": 2,
+    "children": [6, 9]
+  },
+  "gear": [
+    { "emoji": "🚲", "label": "Vélos de ville" },
+    { "emoji": "🧒", "label": "Siège enfant" },
+    "Casques",
+    "Pique-nique"
+  ]
 }

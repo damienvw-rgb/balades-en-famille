@@ -1,0 +1,11 @@
+{
+  "title": "Single tracks de la Semois",
+  "activity": "vtt",
+  "date": "2026-04-18",
+  "country": "Belgique",
+  "region": "Ardennes",
+  "difficulty": "Sportive",
+  "description": "Troisième exemple, ajouté pour que les filtres aient de quoi filtrer : même pays que la boucle du Warandepark, mais activité différente.",
+  "participants": { "adults": 2 },
+  "gear": [{ "emoji": "🚵", "label": "VTT tout suspendu" }, "Protections"]
+}

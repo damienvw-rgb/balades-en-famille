@@ -1,7 +1,12 @@
-export default function ElevationProfile({ elevations }) {
+export default function ElevationProfile({ elevations, color = "#d9a441" }) {
   const values = elevations.filter((e) => e !== null && e !== undefined);
+
   if (values.length < 2) {
-    return <p style={{ color: "var(--ink-dim)", fontFamily: "var(--font-mono)", fontSize: "0.85rem" }}>Pas de données d'altitude pour cette balade.</p>;
+    return (
+      <p className="no-elevation">
+        Pas de données d'altitude dans ce fichier GPX.
+      </p>
+    );
   }
 
   const width = 1000;
@@ -16,15 +21,23 @@ export default function ElevationProfile({ elevations }) {
     return [x, y];
   });
 
-  const linePath = points.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const linePath = points
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(" ");
   const areaPath = `${linePath} L${width},${height} L0,${height} Z`;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" style={{ width: "100%", height: "160px", display: "block" }}>
-      <path d={areaPath} fill="#d9a44133" />
-      <path d={linePath} fill="none" stroke="#d9a441" strokeWidth="2.5" />
-      <text x="4" y="16" fill="#b7c4b6" fontSize="11" fontFamily="var(--font-mono)">{Math.round(max)} m</text>
-      <text x="4" y={height - 4} fill="#b7c4b6" fontSize="11" fontFamily="var(--font-mono)">{Math.round(min)} m</text>
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      style={{ width: "100%", height: "160px", display: "block" }}
+      role="img"
+      aria-label={`Profil d'altitude, de ${Math.round(min)} à ${Math.round(max)} mètres`}
+    >
+      <path d={areaPath} fill={color} fillOpacity="0.18" />
+      <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" />
+      <text x="4" y="16" fill="#b7c4b6" fontSize="11">{Math.round(max)} m</text>
+      <text x="4" y={height - 4} fill="#b7c4b6" fontSize="11">{Math.round(min)} m</text>
     </svg>
   );
 }
