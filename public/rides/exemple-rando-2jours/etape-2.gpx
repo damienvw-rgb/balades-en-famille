@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="mes-balades-velo">
+  <trk>
+    <name>Jour 2</name>
+    <trkseg>
+      <trkpt lat="50.29850" lon="5.95620"><ele>420</ele></trkpt>
+      <trkpt lat="50.30150" lon="5.96120"><ele>466</ele></trkpt>
+      <trkpt lat="50.30450" lon="5.96620"><ele>508</ele></trkpt>
+      <trkpt lat="50.30750" lon="5.97120"><ele>541</ele></trkpt>
+      <trkpt lat="50.31050" lon="5.97620"><ele>562</ele></trkpt>
+      <trkpt lat="50.31350" lon="5.98120"><ele>570</ele></trkpt>
+      <trkpt lat="50.31650" lon="5.98620"><ele>562</ele></trkpt>
+      <trkpt lat="50.31950" lon="5.99120"><ele>541</ele></trkpt>
+      <trkpt lat="50.32250" lon="5.99620"><ele>508</ele></trkpt>
+      <trkpt lat="50.32550" lon="6.00120"><ele>466</ele></trkpt>
+      <trkpt lat="50.32850" lon="6.00620"><ele>420</ele></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

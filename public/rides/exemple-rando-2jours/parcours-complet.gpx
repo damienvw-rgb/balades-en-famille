@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Partage de balades familiales" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Traversée de l&apos;Eifel</name>
+  </metadata>
+  <trk>
+    <name>Jour 1 : montée vers le plateau</name>
+<trkseg>
+      <trkpt lat="50.26000" lon="5.91000"><ele>300</ele></trkpt>
+      <trkpt lat="50.26350" lon="5.91420"><ele>350</ele></trkpt>
+      <trkpt lat="50.26700" lon="5.91840"><ele>397</ele></trkpt>
+      <trkpt lat="50.27050" lon="5.92260"><ele>436</ele></trkpt>
+      <trkpt lat="50.27400" lon="5.92680"><ele>463</ele></trkpt>
+      <trkpt lat="50.27750" lon="5.93100"><ele>478</ele></trkpt>
+      <trkpt lat="50.28100" lon="5.93520"><ele>478</ele></trkpt>
+      <trkpt lat="50.28450" lon="5.93940"><ele>463</ele></trkpt>
+      <trkpt lat="50.28800" lon="5.94360"><ele>436</ele></trkpt>
+      <trkpt lat="50.29150" lon="5.94780"><ele>397</ele></trkpt>
+      <trkpt lat="50.29500" lon="5.95200"><ele>350</ele></trkpt>
+      <trkpt lat="50.29850" lon="5.95620"><ele>300</ele></trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>Jour 2 : traversée et retour</name>
+<trkseg>
+      <trkpt lat="50.29850" lon="5.95620"><ele>420</ele></trkpt>
+      <trkpt lat="50.30150" lon="5.96120"><ele>466</ele></trkpt>
+      <trkpt lat="50.30450" lon="5.96620"><ele>508</ele></trkpt>
+      <trkpt lat="50.30750" lon="5.97120"><ele>541</ele></trkpt>
+      <trkpt lat="50.31050" lon="5.97620"><ele>562</ele></trkpt>
+      <trkpt lat="50.31350" lon="5.98120"><ele>570</ele></trkpt>
+      <trkpt lat="50.31650" lon="5.98620"><ele>562</ele></trkpt>
+      <trkpt lat="50.31950" lon="5.99120"><ele>541</ele></trkpt>
+      <trkpt lat="50.32250" lon="5.99620"><ele>508</ele></trkpt>
+      <trkpt lat="50.32550" lon="6.00120"><ele>466</ele></trkpt>
+      <trkpt lat="50.32850" lon="6.00620"><ele>420</ele></trkpt>
+    </trkseg>
+  </trk>
+</gpx>
