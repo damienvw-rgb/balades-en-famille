@@ -15,21 +15,74 @@ const OUT_DIR = path.join(process.cwd(), "public", "rides");
 const MANIFEST = path.join(OUT_DIR, ".generated.json");
 const MERGED_NAME = "parcours-complet.gpx";
 
-async function loadSubmissions() {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
+// Le pilote Blob s'active exactement dans les mêmes conditions que
+// lib/storage.js, sinon le build et le runtime ne lisent pas la même chose.
+const usingBlob = Boolean(
+  process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID
+);
 
-  if (token) {
-    const { list } = await import("@vercel/blob");
-    const { blobs } = await list({ prefix: "submissions/" });
+/**
+ * Lit un blob privé et le décode en JSON.
+ *
+ * Le store est en mode privé : ses URL ne sont pas récupérables par un simple
+ * fetch, elles répondent 403. Il faut passer par get() du SDK, comme dans
+ * lib/storage.js. C'est aussi ce qui garantit qu'une proposition, qui contient
+ * l'adresse email de son auteur, n'est jamais servie depuis une URL publique.
+ */
+async function readJson(get, pathname) {
+  const result = await get(pathname, {
+    access: "private",
+    useCache: false, // on veut la dernière version, pas le cache CDN
+  });
+  if (!result || result.statusCode !== 200 || !result.stream) return null;
+  return await new Response(result.stream).json();
+}
+
+async function loadSubmissions() {
+  if (usingBlob) {
+    const { list, get } = await import("@vercel/blob");
     const out = [];
-    for (const b of blobs) {
-      const res = await fetch(b.url, { cache: "no-store" });
-      if (res.ok) out.push(await res.json());
+    let found = 0;
+    let unreadable = 0;
+    let cursor;
+
+    // list() est paginé : sans boucle, on perd les entrées au delà de la
+    // première page dès que le nombre de propositions grandit.
+    do {
+      const page = await list({ prefix: "submissions/", cursor, limit: 250 });
+      for (const b of page.blobs) {
+        found += 1;
+        try {
+          const value = await readJson(get, b.pathname);
+          if (value) out.push(value);
+          else unreadable += 1;
+        } catch (err) {
+          unreadable += 1;
+          console.warn(`[prepare] ${b.pathname} illisible : ${err.message}`);
+        }
+      }
+      cursor = page.cursor;
+    } while (cursor);
+
+    console.log(`[prepare] Stockage Blob : ${found} proposition(s) trouvée(s).`);
+
+    // Une lecture qui échoue en silence est ce qui rend ce genre de panne
+    // invisible : le build réussit et le site sort incomplet, sans un mot.
+    // On ne fait pas échouer le build pour autant, sinon une entrée corrompue
+    // dépublierait toutes les autres sorties déjà en ligne.
+    if (unreadable > 0) {
+      console.warn(
+        `[prepare] ATTENTION : ${unreadable} proposition(s) sur ${found} illisibles. ` +
+          "Vérifie que le store Blob est bien en mode privé et que " +
+          "BLOB_READ_WRITE_TOKEN est disponible au moment du build."
+      );
     }
+
     return out;
   }
 
   // Repli local : les mêmes fichiers que le pilote de développement
+  console.log("[prepare] Aucun stockage Blob configuré, repli sur .data/.");
   const dir = path.join(process.cwd(), ".data", "submissions");
   try {
     const names = await fs.readdir(dir);
@@ -248,7 +301,7 @@ async function main() {
   console.log(
     written.length > 0
       ? `[prepare] ${written.length} sortie(s) proposée(s) intégrée(s) : ${written.join(", ")}`
-      : "[prepare] Aucune sortie proposée à intégrer."
+      : `[prepare] Aucune sortie proposée à intégrer (${submissions.length} proposition(s) lue(s), ${approved.length} approuvée(s)).`
   );
 
   // Fichier « parcours complet » pour toutes les sorties à plusieurs étapes,
