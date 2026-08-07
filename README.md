@@ -271,6 +271,8 @@ C'est ce formulaire qui figure dans les mentions légales plutôt qu'une adresse
 
 Une adresse email n'est **jamais** affichée, ni servie par une API publique, ni écrite dans `public/`. Seul le pseudo apparaît. Un test a vérifié qu'aucune adresse ne fuit sur l'accueil, les fiches de sortie, l'API des commentaires, les deux formulaires, les mentions légales ni la page d'administration.
 
+Le store Blob est en mode **privé** : même en connaissant l'URL d'un blob, personne ne peut le lire sans le jeton. C'est indispensable ici, puisque les identités, commentaires, propositions et messages de contact contiennent des adresses email, et que les clés n'ont pas de suffixe aléatoire.
+
 ### Le filtrage anti-spam
 
 Sans service tiers ni captcha :
@@ -300,9 +302,11 @@ Tout se règle dans Vercel, **Settings → Environment Variables**. Aucun compte
 | `ADMIN_EMAIL` | adresse qui reçoit les notifications |
 | `SMTP_USER` | ton adresse Gmail |
 | `SMTP_PASS` | mot de passe d'application Gmail, **pas** ton mot de passe habituel |
-| `VERCEL_DEPLOY_HOOK_URL` | met en ligne une sortie approuvée sans intervention |
+| `VERCEL_DEPLOY_HOOK_URL` | met en ligne une sortie approuvée sans intervention. À copier depuis Settings → Git → Deploy Hooks : créer le hook ne suffit pas, il faut coller son URL ici |
 | `NEXT_PUBLIC_LEGAL_NAME` | nom affiché dans les mentions légales, un prénom suffit |
-| `BLOB_READ_WRITE_TOKEN` | injecté automatiquement à la création du store Blob |
+| `BLOB_STORE_ID` | injecté automatiquement quand tu connectes le store Blob au projet |
+| `BLOB_READ_WRITE_TOKEN` | jeton du store. **À ajouter à la main** : Vercel ne l'injecte plus tout seul. Storage → ton store → Settings → onglet `.env.local` → « Show secret » |
+| `BLOB_ACCESS` | facultatif. Ne le renseigne que si ton store est en mode Public, avec la valeur `public`. Par défaut le code écrit en privé |
 
 ### Le mot de passe d'application Gmail
 
@@ -326,11 +330,17 @@ Vercel redéploie automatiquement.
 
 ### 2. Créer le stockage
 
-Vercel → **Storage** → **Create Database** → **Blob**. Donne un nom, laisse la région par défaut, connecte-le au projet. Vercel Blob est un produit maison, rien à créer ailleurs. La variable `BLOB_READ_WRITE_TOKEN` est ajoutée toute seule.
+Vercel → **Storage** → **Create Database** → **Blob**. Donne un nom, laisse la région par défaut, connecte-le au projet. Vercel Blob est un produit maison, rien à créer ailleurs.
+
+**Choisis le mode Private.** Le store contient des adresses email : identités, commentaires, propositions, messages de contact. Un store public les rendrait lisibles par quiconque devine l'URL, d'autant que les clés n'ont pas de suffixe aléatoire. Le mode d'accès **ne peut plus être changé après la création**, il faudrait supprimer le store et en refaire un.
+
+Vercel ajoute alors `BLOB_STORE_ID` et `BLOB_WEBHOOK_PUBLIC_KEY` à ton projet. Il **n'ajoute plus** `BLOB_READ_WRITE_TOKEN` : va le chercher dans Storage → ton store → **Settings** → onglet `.env.local` → **Show secret**, et ajoute-le toi-même dans les variables du projet.
+
+Le code lit et écrit toujours par le SDK `@vercel/blob`, jamais par un `fetch` direct sur l'URL d'un blob : sur un store privé, l'URL seule ne donne aucun accès.
 
 ### 3. Créer le Deploy Hook
 
-Vercel → **Settings** → **Git** → **Deploy Hooks**. Nom : « Publier une sortie », branche `main`. Copie l'URL obtenue.
+Vercel → **Settings** → **Git** → **Deploy Hooks**. Nom : « Publier une sortie », branche `main`. Copie l'URL obtenue et colle-la dans `VERCEL_DEPLOY_HOOK_URL` à l'étape suivante : créer le hook ne suffit pas.
 
 ### 4. Renseigner les variables
 
