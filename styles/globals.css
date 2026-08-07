@@ -829,7 +829,12 @@ a { color: inherit; text-decoration: none; }
 
 .legal p { line-height: 1.7; color: var(--ink-dim); margin: 0 0 16px; }
 
-.legal a, .site-footer a {
+/* Les liens de texte du pied de page et des mentions légales sont orange et
+   soulignés, mais surtout pas les boutons : la règle est plus spécifique que
+   .button-primary, elle repeignait le texte du bouton en orange sur son fond
+   orange, donc illisible. Le :not l'empêche de les atteindre. */
+.legal a:not([class*="button-"]),
+.site-footer a:not([class*="button-"]) {
   color: var(--rust); text-decoration: underline; text-underline-offset: 3px;
 }
 
