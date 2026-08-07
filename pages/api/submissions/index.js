@@ -3,7 +3,8 @@ import { sendMail, siteUrl, usingSmtp } from "@/lib/mailer";
 import { createToken } from "@/lib/tokens";
 import { inspectContent, checkRateLimit, clientIp, SPAM_MESSAGES } from "@/lib/spam";
 import { checkIdentity } from "@/lib/identity";
-import { gearEmoji, ACTIVITIES, DIFFICULTIES } from "@/lib/activities";
+import { ACTIVITIES, DIFFICULTIES } from "@/lib/activities";
+import { gearEmoji, isKnownGearEmoji } from "@/lib/gear";
 import { parseGpx } from "@/lib/gpx";
 
 export const config = { api: { bodyParser: { sizeLimit: "8mb" } } };
@@ -36,14 +37,24 @@ function normalizeParticipants(raw) {
   return out;
 }
 
-/** Chaque ligne saisie reçoit son pictogramme, déduit de son intitulé. */
+/**
+ * Chaque ligne saisie reçoit son pictogramme.
+ * Il est déduit de l'intitulé, sauf si le visiteur en a choisi un dans la
+ * palette du formulaire. Le choix n'est retenu que s'il fait partie de cette
+ * palette : rien d'arbitraire ne peut ainsi finir dans un fichier de public/.
+ */
 function normalizeGear(raw) {
   if (!Array.isArray(raw)) return null;
   const items = raw
-    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .map((item) => {
+      const source = typeof item === "string" ? { label: item } : item || {};
+      const label = String(source.label || "").trim().slice(0, 60);
+      if (!label) return null;
+      const chosen = String(source.emoji || "").trim();
+      return { emoji: isKnownGearEmoji(chosen) ? chosen : gearEmoji(label), label };
+    })
     .filter(Boolean)
-    .slice(0, 20)
-    .map((label) => ({ emoji: gearEmoji(label), label }));
+    .slice(0, 20);
   return items.length > 0 ? items : null;
 }
 

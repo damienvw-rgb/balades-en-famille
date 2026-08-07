@@ -87,7 +87,7 @@ a { color: inherit; text-decoration: none; }
   padding: 26px 0 16px;
 }
 
-.header-main { flex: 1 1 340px; min-width: 0; }
+.header-main { flex: 1 1 auto; min-width: 0; }
 
 .header-actions {
   display: flex;
@@ -234,6 +234,11 @@ a { color: inherit; text-decoration: none; }
   color: var(--ink-dim);
   white-space: nowrap;
 }
+
+/* Le curseur d'aide signale qu'une infobulle attend au survol. */
+.people-group { cursor: help; }
+.people-emoji { margin-left: 1px; }
+.people-ages { color: var(--ink-dim); }
 
 .ride-card .region, .ride-detail-header .region {
   font-family: var(--font-mono);
@@ -411,17 +416,31 @@ a { color: inherit; text-decoration: none; }
   margin: 0 0 14px; font-size: 0.94rem;
 }
 
+/* Le bloc portait un emoji et un type, sans jamais dire de quoi il s'agissait.
+   Un intitulé explicite lève l'ambiguïté au premier coup d'œil. */
 .lodging {
-  display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;
   margin: 0 0 14px; padding: 10px 14px;
   border-left: 2px solid var(--sage);
   background: var(--accent-soft);
   border-radius: 0 4px 4px 0; font-size: 0.9rem;
 }
 
+.lodging-label {
+  display: block;
+  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--sage); margin-bottom: 4px;
+}
+
+.lodging-body {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;
+  margin: 0;
+}
+
+.lodging-emoji { font-size: 1.05rem; line-height: 1; }
+
 .lodging-type {
-  font-family: var(--font-mono); font-size: 0.68rem;
-  text-transform: uppercase; letter-spacing: 0.07em; color: var(--sage);
+  font-weight: 600; color: var(--ink);
 }
 
 .lodging-text { color: var(--ink-dim); line-height: 1.5; }
@@ -549,11 +568,72 @@ a { color: inherit; text-decoration: none; }
   display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
 }
 
+.gear-picker { margin-bottom: 4px; }
+
 .gear-input-emoji {
   font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0;
 }
 
 .gear-input-row input { flex: 1 1 auto; }
+
+/* ---------- Choix du pictogramme de matériel ---------- */
+
+/* Le pictogramme déduit reste cliquable : la palette s'ouvre juste dessous,
+   ancrée sur le bouton, et se referme au clic à l'extérieur ou sur Échap. */
+.gear-emoji-wrap { position: relative; flex-shrink: 0; }
+
+.gear-emoji-button {
+  width: 38px; height: 38px;
+  display: inline-grid; place-items: center;
+  font-size: 1.15rem; line-height: 1;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.gear-emoji-button:hover { border-color: var(--sage); background: var(--accent-soft); }
+.gear-emoji-button:focus-visible { outline: 2px solid var(--rust); outline-offset: 2px; }
+
+/* Trait plein : le visiteur a forcé ce pictogramme, il n'est plus déduit. */
+.gear-emoji-button.is-chosen { border-style: solid; border-color: var(--sage); }
+
+.gear-emoji-palette {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  width: min(19rem, calc(100vw - 48px));
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-raised);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.gear-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 4px;
+  max-height: 13rem;
+  overflow-y: auto;
+}
+
+.gear-emoji-choice {
+  height: 34px;
+  font-size: 1.05rem; line-height: 1;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.gear-emoji-choice:hover { background: var(--accent-soft); }
+.gear-emoji-choice.is-active { border-color: var(--sage); background: var(--accent-soft); }
+
+.gear-emoji-auto { margin-top: 10px; display: inline-block; }
 
 .ages-row { margin-bottom: 16px; }
 
@@ -770,7 +850,10 @@ a { color: inherit; text-decoration: none; }
 
 .legal-table td { color: var(--ink-dim); }
 
-.legal-updated { font-family: var(--font-mono); font-size: 0.74rem; margin-top: 30px; }
+.legal-updated {
+  font-family: var(--font-mono); font-size: 0.74rem;
+  line-height: 1.7; margin-top: 30px;
+}
 
 /* ---------- Pied de page ---------- */
 
@@ -790,19 +873,65 @@ a { color: inherit; text-decoration: none; }
 /* ---------- Adaptations ---------- */
 
 @media (max-width: 620px) {
-  .site-header.compact { flex-direction: column; gap: 14px; }
-  .header-actions { width: 100%; justify-content: space-between; }
+  /* L'en-tête ne contient plus que le bouton de thème : il tient à côté du
+     titre. Le passage en colonne lui donnait une ligne entière et laissait
+     une large bande vide en haut de l'écran. */
+  .site-header.compact {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 0 12px;
+  }
+  .header-actions { width: auto; justify-content: flex-end; }
+  .site-header p { font-size: 0.9rem; }
+
+  .page-top { padding-top: 12px; }
+
+  /* Le pied de page se lit mieux empilé que serré sur une ligne. */
+  .site-footer { flex-direction: column; align-items: flex-start; gap: 14px; }
   .map-wrap { height: 340px; }
   .filter-count { margin-left: 0; }
   .comment-replies { margin-left: 10px; padding-left: 12px; }
 
+  /* Un tableau à trois colonnes ne tient pas sur un téléphone. Chaque ligne
+     devient donc une petite fiche encadrée, et l'en-tête de colonne est
+     réaffiché devant chaque valeur via l'attribut data-label : sans lui, on
+     lisait trois textes empilés sans savoir à quoi ils répondaient. */
   .legal-table, .legal-table tbody, .legal-table tr, .legal-table td {
     display: block; width: 100%;
   }
+  .legal-table { border-collapse: separate; }
   .legal-table thead { display: none; }
-  .legal-table tr { border-bottom: 1px solid var(--line); padding: 10px 0; }
-  .legal-table td { border: none; padding: 4px 0; }
-  .legal-table td:first-child { color: var(--ink); font-weight: 600; }
+
+  .legal-table tr {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--bg-raised);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+
+  .legal-table td { border: none; padding: 0; }
+  .legal-table td + td { margin-top: 8px; }
+
+  .legal-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--sage);
+    margin-bottom: 2px;
+  }
+
+  .legal-table td:first-child {
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .legal-table td:first-child::before { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

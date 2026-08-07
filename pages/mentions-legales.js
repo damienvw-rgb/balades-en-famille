@@ -29,10 +29,8 @@ export default function MentionsLegales() {
           <h2>Éditeur</h2>
           <p>
             Ce site est un carnet de balades personnel, sans but commercial, édité
-            par {EDITOR}, un particulier. Pour toute question, remarque ou demande,
-            passe par le <Link href="/contact">formulaire de contact</Link> : ça
-            évite de laisser une adresse email exposée aux robots collecteurs, et
-            ta demande arrive tout aussi vite.
+            par {EDITOR}. Pour toute question, remarque ou demande, écris via le{" "}
+            <Link href="/contact">formulaire de contact</Link>.
           </p>
 
           <h2>Données personnelles</h2>
@@ -54,31 +52,31 @@ export default function MentionsLegales() {
             </thead>
             <tbody>
               <tr>
-                <td>Pseudo</td>
-                <td>Signer ton commentaire ou ta sortie</td>
-                <td>Oui, c'est son objet</td>
+                <td data-label="Donnée">Pseudo</td>
+                <td data-label="Pourquoi">Signer ton commentaire ou ta sortie</td>
+                <td data-label="Visible publiquement">Oui, c'est son objet</td>
               </tr>
               <tr>
-                <td>Adresse email</td>
-                <td>
+                <td data-label="Donnée">Adresse email</td>
+                <td data-label="Pourquoi">
                   Confirmer que la demande vient de toi, te prévenir des réponses à
                   tes messages et des commentaires reçus sur une sortie que tu as
                   proposée, et te répondre si tu écris via le formulaire de contact
                 </td>
-                <td>Non, jamais</td>
+                <td data-label="Visible publiquement">Non, jamais</td>
               </tr>
               <tr>
-                <td>Contenu publié</td>
-                <td>Commentaire, description, fichier GPX, matériel, composition du groupe</td>
-                <td>Oui, c'est son objet</td>
+                <td data-label="Donnée">Contenu publié</td>
+                <td data-label="Pourquoi">Commentaire, description, fichier GPX, matériel, composition du groupe</td>
+                <td data-label="Visible publiquement">Oui, c'est son objet</td>
               </tr>
               <tr>
-                <td>Adresse IP</td>
-                <td>
+                <td data-label="Donnée">Adresse IP</td>
+                <td data-label="Pourquoi">
                   Limiter les envois automatisés. Elle n'est pas conservée en clair
                   mais sous forme d'empreinte non réversible
                 </td>
-                <td>Non</td>
+                <td data-label="Visible publiquement">Non</td>
               </tr>
             </tbody>
           </table>
@@ -139,13 +137,13 @@ export default function MentionsLegales() {
 
           <h2>Un mot sur les pictogrammes</h2>
           <p>
-            Les participants sont représentés par des silhouettes féminines,
-            👩 et 👧, plutôt que par les emojis masculins souvent employés par
-            défaut. C'est un choix délibéré : dans les images du voyage à vélo, de
-            la randonnée et de l'aventure en plein air, les femmes et les filles
-            restent nettement moins représentées que les hommes, alors qu'elles
-            sont tout aussi présentes sur le terrain. Ce petit détail graphique ne
-            change pas le monde, mais il ne coûte rien et il dit quelque chose.
+            Les participants sont représentés par des silhouettes, 👩 👨 pour les
+            adultes et 👧 👦 pour les enfants. La version masculine ou féminine
+            est tirée au hasard pour chaque sortie, sans rapport avec les
+            personnes réellement parties : ni le genre ni le prénom de qui que ce
+            soit n'est demandé, seul le nombre d'adultes et d'enfants l'est. Le
+            tirage évite d'imposer une représentation par défaut, et ne fait
+            de jaloux dans aucun sens.
           </p>
 
           <h2>Contenus et droits</h2>
@@ -175,14 +173,13 @@ export default function MentionsLegales() {
             rapidement.
           </p>
 
-          <h2>Hébergement</h2>
-          <p>
-            Le site est hébergé par Vercel Inc., 440 N Barranca Ave #4133, Covina,
-            CA 91723, États-Unis. Les données déposées via les formulaires sont
-            stockées sur l'infrastructure de Vercel.
+          {/* Mention d'hébergeur obligatoire (art. III.74 du Code de droit
+              économique belge, art. 6 LCEN en France), réduite à l'essentiel. */}
+          <p className="legal-updated">
+            Hébergé par Vercel Inc., Covina, CA, États-Unis.
+            <br />
+            Dernière mise à jour : août 2026.
           </p>
-
-          <p className="legal-updated">Dernière mise à jour : août 2026.</p>
         </article>
 
         <footer className="site-footer">

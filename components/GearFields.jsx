@@ -1,4 +1,4 @@
-import { gearEmoji } from "@/lib/gearEmoji";
+import { gearEmoji } from "@/lib/gear";
 
 /**
  * Un champ par équipement : l'emoji est déduit automatiquement du libellé,

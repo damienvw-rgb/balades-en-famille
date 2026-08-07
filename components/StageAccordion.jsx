@@ -5,12 +5,19 @@ import ElevationProfile from "@/components/ElevationProfile";
 function Lodging({ lodging }) {
   if (!lodging) return null;
   const meta = getLodging(lodging.type);
+  // Sans type déclaré, getLodging renvoie le libellé générique « Logement » :
+  // inutile de l'écrire deux fois, l'intitulé du bloc le dit déjà.
+  const showType = Boolean(lodging.type);
+
   return (
-    <p className="lodging">
-      <span aria-hidden="true">{meta.emoji}</span>
-      <span className="lodging-type">{meta.label}</span>
-      {lodging.text && <span className="lodging-text">{lodging.text}</span>}
-    </p>
+    <div className="lodging">
+      <span className="lodging-label">Où on a dormi</span>
+      <p className="lodging-body">
+        <span className="lodging-emoji" aria-hidden="true">{meta.emoji}</span>
+        {showType && <span className="lodging-type">{meta.label}</span>}
+        {lodging.text && <span className="lodging-text">{lodging.text}</span>}
+      </p>
+    </div>
   );
 }
 

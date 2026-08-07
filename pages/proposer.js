@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import { ACTIVITIES, LODGINGS, DIFFICULTIES, gearEmoji } from "@/lib/activities";
+import { ACTIVITIES, LODGINGS, DIFFICULTIES } from "@/lib/activities";
 import { COUNTRY_NAMES, regionsFor, OTHER } from "@/lib/geo";
 import ThemeToggle from "@/components/ThemeToggle";
+import GearPicker from "@/components/GearPicker";
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
 
@@ -22,7 +23,9 @@ export default function Proposer() {
     author: "", authorEmail: "", honeypot: "",
   });
   const [childAges, setChildAges] = useState([]);
-  const [gear, setGear] = useState([""]);
+  // Un élément de matériel vaut { label, emoji }. emoji reste vide tant que
+  // le visiteur laisse le pictogramme déduit automatiquement du libellé.
+  const [gear, setGear] = useState([{ label: "", emoji: "" }]);
   const [stages, setStages] = useState([emptyStage()]);
   const [identity, setIdentity] = useState(null);
   const [state, setState] = useState({ status: "idle", message: null });
@@ -93,7 +96,9 @@ export default function Proposer() {
         children: childAges.map((a) => parseInt(a, 10)).filter((n) => !Number.isNaN(n)),
         childrenCount: parseInt(form.children, 10) || 0,
       },
-      gear: gear.map((g) => g.trim()).filter(Boolean),
+      gear: gear
+        .map((g) => ({ label: (g.label || "").trim(), emoji: g.emoji || "" }))
+        .filter((g) => g.label),
       stages,
       renderedAt: renderedAt.current,
     };
@@ -278,33 +283,12 @@ export default function Proposer() {
           <fieldset>
             <legend>Matériel</legend>
             <p className="field-note">
-              Un élément par ligne. Un pictogramme sera ajouté automatiquement
-              selon ce que tu écris.
+              Un élément par ligne. Le pictogramme est déduit de ce que tu
+              écris. S'il ne convient pas, clique dessus pour en choisir un
+              autre.
             </p>
 
-            {gear.map((item, i) => (
-              <div className="gear-input-row" key={i}>
-                <span className="gear-input-emoji" aria-hidden="true">
-                  {item.trim() ? gearEmoji(item) : "▫️"}
-                </span>
-                <input type="text" value={item} maxLength={60}
-                  placeholder="Tente 3 places, sacoches, filtre à eau…"
-                  onChange={(e) => setGear((l) => l.map((g, k) => (k === i ? e.target.value : g)))} />
-                {gear.length > 1 && (
-                  <button type="button" className="link-button"
-                    onClick={() => setGear((l) => l.filter((_, k) => k !== i))}>
-                    Retirer
-                  </button>
-                )}
-              </div>
-            ))}
-
-            {gear.length < 20 && (
-              <button type="button" className="button-secondary"
-                onClick={() => setGear((l) => [...l, ""])}>
-                + Ajouter un élément
-              </button>
-            )}
+            <GearPicker gear={gear} onChange={setGear} max={20} />
           </fieldset>
 
           <fieldset>

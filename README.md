@@ -108,7 +108,9 @@ S'affiche **2👩 / 3👧 (8, 11 et 13 ans)** sur la fiche de la sortie, et null
 
 Les âges ne concernent que les enfants : ceux des adultes ne sont ni demandés ni affichés. Si tu ne veux pas donner les âges, écris `"children": 3`. Dans le formulaire, le nombre de champs d'âge s'ajuste au nombre d'enfants annoncé.
 
-Les silhouettes sont féminines, choix délibéré expliqué dans les mentions légales du site.
+Les silhouettes sont tirées au hasard entre 👩 et 👨 pour les adultes, 👧 et 👦 pour les enfants. Le tirage part d'une empreinte du slug de la sortie : il varie d'une sortie à l'autre mais reste identique d'un rechargement à l'autre, sinon le serveur et le navigateur n'afficheraient pas la même chose et React signalerait une erreur d'hydratation. Aucune information de genre n'est demandée ni déduite, ce choix est expliqué dans les mentions légales du site.
+
+Au survol d'une silhouette, une infobulle donne le décompte en toutes lettres, accordé au nombre : « 1 adulte », « 3 enfants ».
 
 ### Matériel
 
@@ -119,11 +121,21 @@ Les silhouettes sont féminines, choix délibéré expliqué dans les mentions l
 ]
 ```
 
-Dans le formulaire, chaque élément se saisit dans un champ distinct et reçoit son pictogramme automatiquement, déduit de ce qui est écrit : une tente donne ⛺, un réchaud 🔥, des sacoches 🎒. Les règles sont dans `lib/activities.js`, fonction `gearEmoji`.
+Dans le formulaire, chaque élément se saisit dans un champ distinct et reçoit son pictogramme automatiquement, déduit de ce qui est écrit : une tente donne ⛺, un réchaud 🔥, des sacoches 👜.
+
+Les règles vivent dans **`lib/gear.js`**, fonction `gearEmoji`, seul endroit du site à faire cette déduction. `lib/activities.js` ne fait plus que la ré-exporter, et `lib/gearEmoji.js` a disparu : il y avait trois listes de règles divergentes, le formulaire et la fiche de sortie pouvaient afficher deux pictogrammes différents pour le même texte.
+
+La déduction suit trois principes :
+
+- le libellé est mis à plat avant comparaison, sans accent ni ponctuation, donc « Vélo » et « velo » se valent
+- les racines s'accrochent au début d'un mot, jamais à sa fin : « 3 vélos bemoov » trouve bien `velo`, ce que l'ancienne version ratait à cause du pluriel
+- quand plusieurs mots sont reconnus, celui qui apparaît le plus tôt gagne : « 4 sacoches / fontes / vélo d'adulte » donne 👜 et non 🚲
+
+Si le pictogramme déduit ne convient pas, un clic dessus dans le formulaire ouvre une palette (`components/GearPicker.jsx`). Le choix est transmis avec la proposition et conservé jusqu'à l'affichage de la sortie. Un bouton « Revenir au choix automatique » rend la main à la déduction : tant que le visiteur n'a rien forcé, `emoji` reste vide et une amélioration ultérieure des règles profite à la sortie. Côté API, un pictogramme reçu n'est retenu que s'il fait partie de la palette, rien d'arbitraire ne peut donc atterrir dans un fichier de `public/`.
 
 ### Logement, par étape
 
-`lodging` se met dans une étape, pas au niveau de la sortie. Le `type` donne l'emoji et le libellé, le `text` est libre. Les deux sont facultatifs.
+`lodging` se met dans une étape, pas au niveau de la sortie. Le `type` donne l'emoji et le libellé, le `text` est libre. Les deux sont facultatifs. Le bloc est titré « Où on a dormi » sur la fiche : sans cet intitulé, un emoji suivi d'un nom de camping ne disait pas de quoi il s'agissait.
 
 | `type` | Affichage |
 | --- | --- |
@@ -271,8 +283,6 @@ C'est ce formulaire qui figure dans les mentions légales plutôt qu'une adresse
 
 Une adresse email n'est **jamais** affichée, ni servie par une API publique, ni écrite dans `public/`. Seul le pseudo apparaît. Un test a vérifié qu'aucune adresse ne fuit sur l'accueil, les fiches de sortie, l'API des commentaires, les deux formulaires, les mentions légales ni la page d'administration.
 
-Le store Blob est en mode **privé** : même en connaissant l'URL d'un blob, personne ne peut le lire sans le jeton. C'est indispensable ici, puisque les identités, commentaires, propositions et messages de contact contiennent des adresses email, et que les clés n'ont pas de suffixe aléatoire.
-
 ### Le filtrage anti-spam
 
 Sans service tiers ni captcha :
@@ -302,11 +312,9 @@ Tout se règle dans Vercel, **Settings → Environment Variables**. Aucun compte
 | `ADMIN_EMAIL` | adresse qui reçoit les notifications |
 | `SMTP_USER` | ton adresse Gmail |
 | `SMTP_PASS` | mot de passe d'application Gmail, **pas** ton mot de passe habituel |
-| `VERCEL_DEPLOY_HOOK_URL` | met en ligne une sortie approuvée sans intervention. À copier depuis Settings → Git → Deploy Hooks : créer le hook ne suffit pas, il faut coller son URL ici |
+| `VERCEL_DEPLOY_HOOK_URL` | met en ligne une sortie approuvée sans intervention |
 | `NEXT_PUBLIC_LEGAL_NAME` | nom affiché dans les mentions légales, un prénom suffit |
-| `BLOB_STORE_ID` | injecté automatiquement quand tu connectes le store Blob au projet |
-| `BLOB_READ_WRITE_TOKEN` | jeton du store. **À ajouter à la main** : Vercel ne l'injecte plus tout seul. Storage → ton store → Settings → onglet `.env.local` → « Show secret » |
-| `BLOB_ACCESS` | facultatif. Ne le renseigne que si ton store est en mode Public, avec la valeur `public`. Par défaut le code écrit en privé |
+| `BLOB_READ_WRITE_TOKEN` | injecté automatiquement à la création du store Blob |
 
 ### Le mot de passe d'application Gmail
 
@@ -330,17 +338,11 @@ Vercel redéploie automatiquement.
 
 ### 2. Créer le stockage
 
-Vercel → **Storage** → **Create Database** → **Blob**. Donne un nom, laisse la région par défaut, connecte-le au projet. Vercel Blob est un produit maison, rien à créer ailleurs.
-
-**Choisis le mode Private.** Le store contient des adresses email : identités, commentaires, propositions, messages de contact. Un store public les rendrait lisibles par quiconque devine l'URL, d'autant que les clés n'ont pas de suffixe aléatoire. Le mode d'accès **ne peut plus être changé après la création**, il faudrait supprimer le store et en refaire un.
-
-Vercel ajoute alors `BLOB_STORE_ID` et `BLOB_WEBHOOK_PUBLIC_KEY` à ton projet. Il **n'ajoute plus** `BLOB_READ_WRITE_TOKEN` : va le chercher dans Storage → ton store → **Settings** → onglet `.env.local` → **Show secret**, et ajoute-le toi-même dans les variables du projet.
-
-Le code lit et écrit toujours par le SDK `@vercel/blob`, jamais par un `fetch` direct sur l'URL d'un blob : sur un store privé, l'URL seule ne donne aucun accès.
+Vercel → **Storage** → **Create Database** → **Blob**. Donne un nom, laisse la région par défaut, connecte-le au projet. Vercel Blob est un produit maison, rien à créer ailleurs. La variable `BLOB_READ_WRITE_TOKEN` est ajoutée toute seule.
 
 ### 3. Créer le Deploy Hook
 
-Vercel → **Settings** → **Git** → **Deploy Hooks**. Nom : « Publier une sortie », branche `main`. Copie l'URL obtenue et colle-la dans `VERCEL_DEPLOY_HOOK_URL` à l'étape suivante : créer le hook ne suffit pas.
+Vercel → **Settings** → **Git** → **Deploy Hooks**. Nom : « Publier une sortie », branche `main`. Copie l'URL obtenue.
 
 ### 4. Renseigner les variables
 
@@ -381,7 +383,8 @@ scripts/prepare-rides.mjs          intègre les sorties approuvées, fusionne le
 
 lib/rides.js         lecture des sorties, totaux, troncature
 lib/gpx.js           parsing GPX, distance, dénivelé
-lib/activities.js    activités, logements, difficultés, emojis, participants
+lib/activities.js    activités, logements, difficultés, participants
+lib/gear.js          déduction du pictogramme de matériel, palette, normalisation
 lib/geo.js           pays et régions du formulaire
 lib/identity.js      liaison pseudo vers email
 lib/spam.js          filtrage anti-spam
@@ -395,7 +398,8 @@ components/ElevationProfile.jsx  profil d'altitude
 components/Comments.jsx          fil de discussion et formulaire
 components/Filters.jsx           filtres activité et pays
 components/RideCard.jsx          carte d'une sortie sur l'accueil
-components/Participants.jsx      composition du groupe
+components/Participants.jsx      composition du groupe, infobulles au survol
+components/GearPicker.jsx        saisie du matériel et choix du pictogramme
 components/ThemeToggle.jsx       bascule clair et sombre
 
 pages/index.js             accueil

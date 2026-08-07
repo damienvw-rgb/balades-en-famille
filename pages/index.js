@@ -40,7 +40,10 @@ export default function Home({ rides, activities, countries }) {
       </Head>
 
       <div className="container">
-        {/* En-tête compact : le contenu doit venir vite */}
+        {/* En-tête compact : le contenu doit venir vite.
+            Le bouton « Proposer une sortie » vit dans le pied de page, il
+            n'est pas repris ici : sur téléphone il poussait le titre vers le
+            bas et laissait une bande vide en haut de l'écran. */}
         <header className="site-header compact">
           <div className="header-main">
             <h1>Partage de balades familiales</h1>
@@ -51,9 +54,6 @@ export default function Home({ rides, activities, countries }) {
           </div>
           <div className="header-actions">
             <ThemeToggle />
-            <Link href="/proposer" className="button-primary small">
-              Proposer une sortie
-            </Link>
           </div>
         </header>
 
@@ -96,7 +96,7 @@ export default function Home({ rides, activities, countries }) {
             {" · "}
             <Link href="/contact">Contact</Link>
           </span>
-          <Link href="/proposer" className="button-secondary">
+          <Link href="/proposer" className="button-primary small">
             Proposer une sortie
           </Link>
         </footer>
