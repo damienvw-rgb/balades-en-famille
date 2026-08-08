@@ -15,6 +15,9 @@
 .env
 .env*.local
 
+# Jeton GitHub utilisé par Claude pour pousser, ne jamais versionner
+.claude-token
+
 # Métadonnées de la CLI Vercel
 /.vercel
 
