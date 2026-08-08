@@ -18,6 +18,9 @@
 # Jeton GitHub utilisé par Claude pour pousser, ne jamais versionner
 .claude-token
 
+# Notes de travail de Claude, le dépôt est public
+CLAUDE.md
+
 # Métadonnées de la CLI Vercel
 /.vercel
 
