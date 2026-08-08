@@ -14,6 +14,7 @@ import path from "path";
 const OUT_DIR = path.join(process.cwd(), "public", "rides");
 const MANIFEST = path.join(OUT_DIR, ".generated.json");
 const MERGED_NAME = "parcours-complet.gpx";
+const CORRECTIONS = path.join(process.cwd(), "corrections.json");
 
 // Le pilote Blob s'active exactement dans les mêmes conditions que
 // lib/storage.js, sinon le build et le runtime ne lisent pas la même chose.
@@ -93,6 +94,31 @@ async function loadSubmissions() {
     return out;
   } catch {
     return [];
+  }
+}
+
+/**
+ * Corrections à appliquer aux sorties proposées, lues dans corrections.json.
+ *
+ * Une sortie proposée par un visiteur vit dans le stockage, pas dans le dépôt :
+ * on ne peut donc pas la retoucher à la main comme un info.json. Ce fichier
+ * permet de corriger un champ après coup, sans réécrire la proposition
+ * d'origine ni redemander quoi que ce soit à son auteur.
+ *
+ * Format : { "slug-de-la-sortie": { "difficulty": "Difficile" } }
+ *
+ * Absent ou illisible, on continue sans corriger : ce n'est jamais une raison
+ * de faire échouer un build.
+ */
+async function loadCorrections() {
+  try {
+    const value = JSON.parse(await fs.readFile(CORRECTIONS, "utf-8"));
+    return value && typeof value === "object" ? value : {};
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      console.warn(`[prepare] corrections.json illisible, ignoré : ${err.message}`);
+    }
+    return {};
   }
 }
 
@@ -255,6 +281,8 @@ async function main() {
   }
 
   const approved = submissions.filter((s) => s.status === "approved");
+  const corrections = await loadCorrections();
+  const applied = [];
   const written = [];
 
   for (const s of approved) {
@@ -272,8 +300,14 @@ async function main() {
     const dir = path.join(OUT_DIR, slug);
     await fs.mkdir(dir, { recursive: true });
 
+    // La correction est repérée par le slug d'origine, celui que tu vois dans
+    // l'adresse de la sortie, pas par le slug suffixé en cas de collision.
+    const fix = corrections[s.slug];
+    if (fix && typeof fix === "object") applied.push(s.slug);
+
     const info = {
       ...s.info,
+      ...(fix && typeof fix === "object" ? fix : {}),
       author: s.author,
       // L'adresse de l'auteur reste hors de public/ : elle est lue depuis le
       // stockage au moment d'envoyer une notification, jamais servie au client.
@@ -303,6 +337,17 @@ async function main() {
       ? `[prepare] ${written.length} sortie(s) proposée(s) intégrée(s) : ${written.join(", ")}`
       : `[prepare] Aucune sortie proposée à intégrer (${submissions.length} proposition(s) lue(s), ${approved.length} approuvée(s)).`
   );
+
+  // Une correction déclarée pour un slug qui n'existe plus passerait autrement
+  // totalement inaperçue : on dit ce qui a servi et ce qui n'a servi à rien.
+  const declared = Object.keys(corrections);
+  if (declared.length > 0) {
+    const unused = declared.filter((slug) => !applied.includes(slug));
+    console.log(`[prepare] ${applied.length} correction(s) appliquée(s) sur ${declared.length} déclarée(s).`);
+    if (unused.length > 0) {
+      console.warn(`[prepare] Correction sans sortie correspondante : ${unused.join(", ")}`);
+    }
+  }
 
   // Fichier « parcours complet » pour toutes les sorties à plusieurs étapes,
   // qu'elles viennent du dépôt ou d'une proposition.

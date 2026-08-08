@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip } from "react-leaflet";
+import { mapLayerFor } from "@/lib/activities";
 
 /**
  * Fonds de carte disponibles, tous libres et sans clé d'API.
@@ -29,8 +30,10 @@ const LAYERS = {
   },
 };
 
-export default function RouteMap({ stages, visibleStages = null }) {
-  const [layer, setLayer] = useState("cyclosm");
+export default function RouteMap({ stages, activity = null, visibleStages = null }) {
+  // Le fond de départ dépend de l'activité : relief en randonnée, cyclable à
+  // vélo, plan sinon. Le visiteur peut toujours en changer avec les boutons.
+  const [layer, setLayer] = useState(() => mapLayerFor(activity));
 
   const drawable = stages.filter(
     (s) => s.points.length > 0 && (!visibleStages || visibleStages.includes(s.file))
@@ -47,7 +50,8 @@ export default function RouteMap({ stages, visibleStages = null }) {
   ];
 
   const multi = stages.length > 1;
-  const tiles = LAYERS[layer];
+  // Filet de sécurité : une clé inconnue ne doit jamais faire disparaître la carte.
+  const tiles = LAYERS[layer] || LAYERS.plan;
 
   return (
     <div className="map-inner">

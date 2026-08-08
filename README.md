@@ -207,7 +207,15 @@ Trois fonds, tous libres et sans clé d'API, sélectionnables sur chaque carte :
 | Relief | OpenTopoMap | courbes de niveau marquées, utile en montagne |
 | Plan | OpenStreetMap | fond neutre, le plus lisible en ville |
 
-CyclOSM est le défaut.
+**Le fond affiché à l'arrivée dépend de l'activité**, parce qu'on ne regarde pas une randonnée en montagne comme une sortie à vélo :
+
+| Activité | Fond proposé d'office |
+| --- | --- |
+| Vélo, VTT, Gravel | Cyclable |
+| Randonnée, Marche, Raquettes, Ski | Relief |
+| Kayak, Cheval, Autre | Plan |
+
+Les trois boutons restent affichés dans tous les cas : le visiteur change de fond quand il veut, ce choix ne fait que décider du premier affichage. La correspondance est dans `ACTIVITY_MAP_LAYER`, en tête de `lib/activities.js` : une ligne à changer si tu veux un autre fond pour une activité.
 
 ### Téléchargement des traces
 
@@ -255,6 +263,22 @@ Un visiteur peut **proposer une sortie**, publiée seulement après ta validatio
 7. L'auteur est prévenu de la publication
 
 Rien n'est publié sans ton accord.
+
+### Corriger une sortie déjà publiée
+
+Une sortie proposée par un visiteur vit dans le stockage, pas dans le dépôt : il n'y a donc pas d'`info.json` à ouvrir pour rectifier une difficulté mal évaluée ou une faute dans un titre. Le fichier `corrections.json`, à la racine, sert à ça :
+
+```json
+{
+  "petit-mont-bonvin": {
+    "difficulty": "Difficile"
+  }
+}
+```
+
+La clé est le slug de la sortie, celui qui apparaît dans son adresse. Les champs déclarés remplacent ceux de la proposition au moment du build, sans toucher à la proposition d'origine ni au stockage : tu peux revenir en arrière en supprimant la ligne. N'importe quel champ d'`info.json` est acceptable, sauf `author`, `submissionId` et `stages`, qui restent gérés par le script.
+
+Une correction déclarée pour un slug qui n'existe pas est signalée dans les logs du build, sans le faire échouer.
 
 ### Les fils de discussion
 
@@ -380,6 +404,7 @@ Si un email n'arrive pas, regarde les indésirables, puis Vercel → **Logs**.
 public/rides/<slug>/*.gpx          les traces GPS
 public/rides/<slug>/info.json      titre, activité, lieu, étapes, matériel
 scripts/prepare-rides.mjs          intègre les sorties approuvées, fusionne les GPX
+corrections.json                   retouches appliquées aux sorties proposées
 
 lib/rides.js         lecture des sorties, totaux, troncature
 lib/gpx.js           parsing GPX, distance, dénivelé

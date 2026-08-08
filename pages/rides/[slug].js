@@ -146,7 +146,7 @@ export default function RidePage({ ride }) {
         </div>
 
         <div className="map-wrap">
-          <RouteMap stages={ride.stages} />
+          <RouteMap stages={ride.stages} activity={ride.activity} />
         </div>
 
         <div className="download-row">
