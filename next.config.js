@@ -1,3 +1,9 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+};
+
+module.exports = nextConfig;
 # Mettre en place un projet Claude pour ce site
 
 Deux choses à faire : coller les instructions ci-dessous dans les **instructions personnalisées** du projet, et joindre le code dans les **fichiers du projet**.
