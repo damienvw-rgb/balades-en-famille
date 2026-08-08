@@ -1,8 +1,27 @@
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"]
-    }
-  }
-}
+# Dépendances installées par npm
+/node_modules
+
+# Sortie de build Next.js
+/.next
+/out
+
+# Stockage local de développement, repli utilisé quand BLOB_READ_WRITE_TOKEN est absent
+/.data
+
+# Manifeste des sorties matérialisées par scripts/prepare-rides.mjs
+/public/rides/.generated.json
+
+# Variables d'environnement, ne jamais versionner
+.env
+.env*.local
+
+# Métadonnées de la CLI Vercel
+/.vercel
+
+# Journaux
+*.log
+npm-debug.log*
+
+# Fichiers créés par le système d'exploitation
+.DS_Store
+Thumbs.db
