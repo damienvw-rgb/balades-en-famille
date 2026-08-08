@@ -1,3 +1,11 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
 # Dépendances installées par npm
 /node_modules
 
