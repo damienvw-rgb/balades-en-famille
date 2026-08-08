@@ -1,811 +1,113 @@
-/* ===========================================================================
-   Thèmes
-   Le thème clair est le défaut. Le thème sombre s'applique via
-   data-theme="dark" posé sur <html> avant le premier rendu (voir _document.js).
-   =========================================================================== */
+# Mettre en place un projet Claude pour ce site
+
+Deux choses à faire : coller les instructions ci-dessous dans les **instructions personnalisées** du projet, et joindre le code dans les **fichiers du projet**.
+
+---
+
+## 1. À coller dans les instructions du projet
+
+```
+Tu m'aides à faire évoluer « Partage de balades familiales », un site Next.js
+déployé sur Vercel qui répertorie des balades à vélo et randonnées, avec cartes,
+profils d'altitude et traces GPX. Des visiteurs peuvent proposer des sorties et
+commenter.
+
+## Contexte technique
+
+- Next.js 16 en Pages Router (pas App Router), React 19, JavaScript sans TypeScript
+- Cartes : Leaflet et react-leaflet 5, fonds CyclOSM, OpenTopoMap et OSM, sans clé d'API
+- Stockage : Vercel Blob en production, fichiers JSON dans .data/ en développement.
+  La bascule est automatique dans lib/storage.js selon BLOB_READ_WRITE_TOKEN.
+- Emails : SMTP Gmail avec mot de passe d'application, repli console en développement.
+  La bascule est dans lib/mailer.js selon SMTP_USER et SMTP_PASS.
+- CSS : un seul fichier styles/globals.css, variables CSS, thèmes clair et sombre
+- Aucune dépendance payante, aucun compte tiers en dehors de Vercel et Gmail
+
+## Architecture
+
+Une sortie est un dossier public/rides/<slug>/ contenant un ou plusieurs .gpx et
+un info.json. Les sorties proposées par des visiteurs vivent dans le stockage,
+puis scripts/prepare-rides.mjs les matérialise dans public/rides/ avant chaque
+build, au même format que les miennes. Ce script génère aussi parcours-complet.gpx
+pour les sorties à plusieurs étapes.
+
+Les pages de sorties sont statiques via getStaticProps. Commentaires, propositions
+et messages de contact passent par des routes API dynamiques.
+
+Fichiers clés :
+- lib/rides.js        lecture des sorties, totaux, troncature des descriptions
+- lib/gpx.js          parsing GPX, distance, dénivelé
+- lib/activities.js   activités, logements, difficultés, emojis matériel, participants
+- lib/geo.js          pays et régions du formulaire
+- lib/identity.js     liaison pseudo vers email
+- lib/spam.js         filtrage anti-spam en sept couches
+- lib/storage.js      abstraction Blob ou fichiers locaux
+- lib/mailer.js       abstraction SMTP ou console
+- lib/tokens.js       jetons HMAC signés, sans stockage
+
+## Règles à respecter
+
+1. Une adresse email ne doit JAMAIS arriver au navigateur : ni dans une API
+   publique, ni dans un fichier de public/. Vérifie ce point à chaque modification
+   touchant aux commentaires, propositions ou contact.
+2. Tout contenu déposé par un visiteur passe par le filtre anti-spam ET par une
+   confirmation d'adresse email avant publication.
+3. Les sorties proposées ne deviennent visibles qu'après validation manuelle
+   depuis /admin.
+4. Un pseudo appartient à une adresse email. Toute fonctionnalité acceptant un
+   pseudo doit appeler checkIdentity() puis bindIdentity() après confirmation.
+5. Un champ facultatif non renseigné n'affiche rien : pas de bloc vide, pas de
+   libellé orphelin.
+6. Le site doit continuer à fonctionner sans aucune variable d'environnement,
+   avec stockage local et emails en console. C'est ce qui me permet de tester
+   avant de déployer, ne casse pas ce repli.
+7. Les emojis de participants sont féminins (femme et fille). C'est un choix
+   assumé, expliqué dans les mentions légales. Ne les change pas.
+8. Le thème clair est le défaut. Toute nouvelle couleur passe par une variable
+   CSS définie pour les deux thèmes, jamais par une couleur en dur.
+
+## Ce que j'attends de toi
+
+- Lance le build avant de me livrer, et dis-moi ce que tu as vérifié et ce que
+  tu n'as pas pu vérifier
+- Livre un zip complet du projet plutôt que des extraits : je remplace le dossier
+  entier à chaque fois
+- Commente le code en français, comme l'existant
+- Signale-moi franchement les implications que je n'aurais pas vues : coût, RGPD,
+  complexité, ou le fait que le plan Vercel Hobby interdit l'usage commercial
+- Mets à jour le README quand tu ajoutes une fonctionnalité
+
+## Mes conventions
+
+- Jamais de tiret cadratin ni demi-cadratin dans les textes affichés, ni dans tes
+  réponses
+- Interface entièrement en français
+- Je déploie par git push, Vercel redéploie tout seul
+```
+
+---
+
+## 2. Fichiers à joindre au projet
+
+Joins le dossier du site **sans** `node_modules` ni `.next`. Si l'interface refuse un dossier entier, joins au minimum :
+
+- `README.md`
+- `package.json`
+- tout le contenu de `lib/`
+- tout le contenu de `components/`
+- tout le contenu de `pages/`
+- `styles/globals.css`
+- `scripts/prepare-rides.mjs`
+- `.env.example`
 
-:root,
-:root[data-theme="light"] {
-  --bg: #f4f1e8;
-  --bg-raised: #fffdf7;
-  --ink: #21281f;
-  --ink-dim: #5c6458;
-  --line: rgba(33, 40, 31, 0.14);
-  --card: #fffdf7;
-  --card-text: #21281f;
-  --card-shadow: 0 1px 2px rgba(33, 40, 31, 0.06);
-  --card-shadow-hover: 0 8px 22px rgba(33, 40, 31, 0.14);
+Inutile de joindre `public/rides/` : ce sont tes données, pas du code, et ça alourdit le projet pour rien.
 
-  --rust: #b34a26;
-  --sage: #4f7043;
-  --gold: #9a6f14;
-  --accent-soft: rgba(179, 74, 38, 0.08);
-  --warn: #a8391a;
+---
 
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-}
+## 3. Bons réflexes
 
-:root[data-theme="dark"] {
-  --bg: #161d18;
-  --bg-raised: #1f2a21;
-  --ink: #eef2ea;
-  --ink-dim: #b0bdaf;
-  --line: rgba(238, 242, 234, 0.15);
-  --card: #212c23;
-  --card-text: #eef2ea;
-  --card-shadow: none;
-  --card-shadow-hover: 0 10px 26px rgba(0, 0, 0, 0.4);
+**Au début de chaque conversation**, précise si tu as déjà déployé les modifications précédentes. Sans ça, on risque de travailler sur deux versions différentes.
 
-  --rust: #d9663c;
-  --sage: #8fae87;
-  --gold: #d9a441;
-  --accent-soft: rgba(217, 102, 60, 0.12);
-  --warn: #e8967a;
-}
+**Après chaque livraison**, remplace ton dossier local, lance `npm install` puis `npm run dev`, vérifie, et seulement ensuite `git push`.
 
-* { box-sizing: border-box; }
-
-html, body {
-  padding: 0;
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-body);
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-a { color: inherit; text-decoration: none; }
-
-.container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
-.container.narrow { max-width: 760px; }
-
-.sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
-}
-
-/* ---------- En-tête ---------- */
-
-.page-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding-top: 20px;
-}
-
-.site-header { padding: 28px 0 18px; }
-
-.site-header.compact {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-  padding: 26px 0 16px;
-}
-
-.header-main { flex: 1 1 340px; min-width: 0; }
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.site-header h1 {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-weight: 600;
-  font-size: clamp(1.7rem, 3.4vw, 2.5rem);
-  letter-spacing: -0.015em;
-  line-height: 1.1;
-  margin: 0 0 8px;
-}
-
-.site-header p {
-  color: var(--ink-dim);
-  font-size: 0.95rem;
-  line-height: 1.5;
-  max-width: 56ch;
-  margin: 0;
-}
-
-.theme-toggle {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink-dim);
-  font-size: 1rem;
-  cursor: pointer;
-  display: inline-grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-
-.theme-toggle:hover { border-color: var(--sage); color: var(--ink); }
-.theme-toggle-placeholder { display: inline-block; width: 36px; height: 36px; }
-
-/* ---------- Filtres, sur une seule ligne ---------- */
-
-.filters {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 12px 0 18px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 22px;
-}
-
-.filter-select select {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  padding: 7px 30px 7px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--bg-raised);
-  color: var(--ink);
-  cursor: pointer;
-  appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
-                    linear-gradient(135deg, currentColor 50%, transparent 50%);
-  background-position: calc(100% - 15px) center, calc(100% - 10px) center;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-}
-
-.filter-select select:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
-
-.filter-count {
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  color: var(--ink-dim);
-  margin-left: auto;
-}
-
-.filter-reset {
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  background: none; border: none; padding: 0;
-  color: var(--rust); cursor: pointer;
-  text-decoration: underline; text-underline-offset: 3px;
-}
-
-/* ---------- Grille des sorties ---------- */
-
-.ride-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
-  padding-bottom: 40px;
-}
-
-.ride-card {
-  background: var(--card);
-  color: var(--card-text);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 20px 22px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-
-.ride-card:hover, .ride-card:focus-visible {
-  transform: translateY(-3px);
-  box-shadow: var(--card-shadow-hover);
-  outline: none;
-}
-
-.card-top {
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-}
-
-.activity-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 0.7rem; font-weight: 500; letter-spacing: 0.04em;
-  padding: 4px 10px 4px 8px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--rust);
-}
-
-.activity-badge span[aria-hidden] { font-size: 0.95rem; line-height: 1; }
-
-.stage-badge {
-  font-family: var(--font-mono);
-  font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em;
-  padding: 4px 9px; border-radius: 999px;
-  border: 1px solid var(--line); color: var(--ink-dim);
-}
-
-.people {
-  font-size: 0.9rem;
-  margin-left: auto;
-  color: var(--ink-dim);
-  white-space: nowrap;
-}
-
-.ride-card .region, .ride-detail-header .region {
-  font-family: var(--font-mono);
-  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em;
-  color: var(--sage);
-}
-
-.ride-card h2 {
-  font-family: var(--font-display);
-  font-size: 1.3rem; font-weight: 600; line-height: 1.2; margin: 0;
-}
-
-.ride-card .desc {
-  font-size: 0.9rem; line-height: 1.45; color: var(--ink-dim);
-  flex-grow: 1; margin: 0;
-}
-
-.desc-more { color: var(--rust); white-space: nowrap; }
-
-.stat-row {
-  display: flex; gap: 18px;
-  font-family: var(--font-mono); font-size: 0.85rem;
-  padding-top: 8px; border-top: 1px solid var(--line);
-}
-
-.stat-label {
-  display: block;
-  font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--ink-dim);
-}
-
-.stat-value { font-weight: 600; }
-
-/* ---------- Fiche d'une sortie ---------- */
-
-.back-link {
-  font-family: var(--font-mono); font-size: 0.82rem; color: var(--sage);
-}
-.back-link:hover { color: var(--rust); }
-
-.ride-detail-header { padding: 22px 0 8px; }
-
-.ride-detail-header h1 {
-  font-family: var(--font-display);
-  font-size: clamp(1.8rem, 3.6vw, 2.6rem);
-  font-weight: 600; line-height: 1.12;
-  margin: 8px 0 14px;
-}
-
-.ride-detail-header .description {
-  color: var(--ink-dim); max-width: 64ch; line-height: 1.6; margin: 0 0 10px;
-}
-
-.ride-author {
-  font-family: var(--font-mono); font-size: 0.76rem; color: var(--sage);
-  margin: 0 0 18px;
-}
-
-.stat-strip {
-  display: flex; flex-wrap: wrap; gap: 26px;
-  padding: 18px 0; margin-bottom: 24px;
-  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
-  font-family: var(--font-mono);
-}
-
-.stat-strip .stat-value { font-size: 1.25rem; color: var(--rust); }
-
-.map-wrap {
-  position: relative;
-  height: 460px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 20px;
-  border: 1px solid var(--line);
-}
-
-.map-inner { position: relative; height: 100%; width: 100%; }
-
-.layer-switch {
-  position: absolute; top: 10px; right: 10px; z-index: 500;
-  display: flex; gap: 2px; padding: 3px;
-  background: var(--bg-raised);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-}
-
-.layer-button {
-  font-family: var(--font-mono); font-size: 0.68rem;
-  padding: 5px 11px; border-radius: 999px;
-  border: none; background: transparent; color: var(--ink-dim); cursor: pointer;
-}
-
-.layer-button.is-active { background: var(--rust); color: #fff; }
-
-.leaflet-container { height: 100%; width: 100%; background: var(--bg-raised); }
-
-.download-row {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 14px;
-  margin-bottom: 32px;
-}
-
-.download-note { font-size: 0.82rem; color: var(--ink-dim); }
-
-/* ---------- Matériel ---------- */
-
-.gear { margin-bottom: 34px; }
-
-.gear-title, .elevation-wrap h4 {
-  font-family: var(--font-mono);
-  font-size: 0.7rem; font-weight: 500;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--ink-dim); margin: 0 0 10px;
-}
-
-.gear-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; }
-
-.gear-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.85rem; padding: 6px 12px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink);
-}
-
-/* ---------- Étapes dépliables ---------- */
-
-.section-title {
-  font-family: var(--font-display);
-  font-size: 1.4rem; font-weight: 600; margin: 8px 0 16px;
-}
-
-.stage-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 50px; }
-
-.stage {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--bg-raised);
-  overflow: hidden;
-}
-
-.stage.is-open { border-color: var(--sage); }
-
-.stage-toggle {
-  width: 100%;
-  display: flex; align-items: center; gap: 12px;
-  padding: 16px 18px;
-  background: none; border: none; cursor: pointer;
-  color: var(--ink); text-align: left;
-  font-family: var(--font-body);
-}
-
-.stage-toggle:hover { background: var(--accent-soft); }
-.stage-toggle:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
-
-.stage-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
-.stage-toggle-title {
-  font-family: var(--font-display); font-size: 1.05rem; font-weight: 600;
-  flex: 1 1 auto; min-width: 0;
-}
-
-.stage-figures {
-  font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-dim);
-  white-space: nowrap;
-}
-
-.stage-chevron {
-  font-family: var(--font-mono); font-size: 1.1rem; color: var(--rust);
-  width: 18px; text-align: center; flex-shrink: 0;
-}
-
-.stage-panel { padding: 0 18px 18px; }
-
-.stage-description {
-  color: var(--ink-dim); line-height: 1.6; max-width: 64ch;
-  margin: 0 0 14px; font-size: 0.94rem;
-}
-
-.lodging {
-  display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;
-  margin: 0 0 14px; padding: 10px 14px;
-  border-left: 2px solid var(--sage);
-  background: var(--accent-soft);
-  border-radius: 0 4px 4px 0; font-size: 0.9rem;
-}
-
-.lodging-type {
-  font-family: var(--font-mono); font-size: 0.68rem;
-  text-transform: uppercase; letter-spacing: 0.07em; color: var(--sage);
-}
-
-.lodging-text { color: var(--ink-dim); line-height: 1.5; }
-
-.elevation-wrap {
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 16px 18px 8px;
-  margin-bottom: 14px;
-}
-
-.no-elevation {
-  color: var(--ink-dim); font-family: var(--font-mono);
-  font-size: 0.8rem; margin: 0 0 10px;
-}
-
-/* ---------- Boutons ---------- */
-
-.button-primary, .button-secondary {
-  font-family: var(--font-mono); font-size: 0.82rem;
-  padding: 9px 17px; border-radius: 5px; cursor: pointer;
-  border: 1px solid transparent; display: inline-block; text-decoration: none;
-  white-space: nowrap;
-}
-
-.button-primary { background: var(--rust); color: #fff; }
-.button-primary:hover:not(:disabled) { filter: brightness(0.92); }
-.button-primary:disabled { opacity: 0.5; cursor: default; }
-.button-primary.small { font-size: 0.76rem; padding: 7px 14px; }
-
-.button-secondary {
-  background: transparent; border-color: var(--line); color: var(--ink-dim);
-}
-.button-secondary:hover { border-color: var(--sage); color: var(--ink); }
-
-.link-button {
-  background: none; border: none; padding: 0;
-  font-family: var(--font-mono); font-size: 0.78rem;
-  color: var(--rust); cursor: pointer;
-  text-decoration: underline; text-underline-offset: 3px;
-}
-
-/* ---------- Formulaires ---------- */
-
-.field {
-  display: flex; flex-direction: column; gap: 6px;
-  margin-bottom: 16px; flex: 1 1 200px;
-}
-
-.field.narrow-field { flex: 0 1 130px; }
-
-.field > span {
-  font-family: var(--font-mono);
-  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--ink-dim);
-}
-
-.field > span em {
-  font-style: normal; color: var(--rust);
-  text-transform: none; letter-spacing: 0; margin-left: 6px;
-}
-
-.field input, .field textarea, .field select,
-.gear-input-row input, .ages-inputs input {
-  font-family: var(--font-body); font-size: 0.94rem;
-  padding: 9px 12px; border-radius: 5px;
-  border: 1px solid var(--line);
-  background: var(--bg-raised); color: var(--ink);
-  width: 100%;
-}
-
-.field textarea { resize: vertical; line-height: 1.5; }
-
-.field input:focus, .field textarea:focus, .field select:focus,
-.gear-input-row input:focus, .ages-inputs input:focus {
-  outline: 2px solid var(--gold); outline-offset: 1px; border-color: transparent;
-}
-
-.field input[type="file"] { padding: 7px; font-size: 0.85rem; }
-
-.file-ok { font-family: var(--font-mono); font-size: 0.74rem; color: var(--sage); }
-
-.field-row { display: flex; flex-wrap: wrap; gap: 0 16px; }
-
-.field-note {
-  font-size: 0.82rem; color: var(--ink-dim); line-height: 1.5;
-  margin: 0 0 14px; max-width: 56ch;
-}
-
-.field-note a, .identity-warning a {
-  color: var(--rust); text-decoration: underline; text-underline-offset: 3px;
-}
-
-.honeypot {
-  position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;
-}
-
-.submit-form fieldset {
-  border: 1px solid var(--line); border-radius: 8px;
-  padding: 18px 20px 4px; margin: 0 0 22px;
-}
-
-.submit-form legend {
-  font-family: var(--font-display); font-size: 1.02rem; font-weight: 600;
-  padding: 0 8px;
-}
-
-.stage-fields {
-  border-left: 2px solid var(--line); padding-left: 16px; margin-bottom: 22px;
-}
-
-.stage-fields-head {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 12px; margin-bottom: 10px;
-}
-
-.stage-fields-head h4 {
-  font-family: var(--font-mono); font-size: 0.72rem;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--sage); margin: 0;
-}
-
-.gear-input-row {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
-}
-
-.gear-input-emoji {
-  font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0;
-}
-
-.gear-input-row input { flex: 1 1 auto; }
-
-.ages-row { margin-bottom: 16px; }
-
-.ages-label {
-  display: block; font-family: var(--font-mono);
-  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--ink-dim); margin-bottom: 6px;
-}
-
-.ages-inputs { display: flex; flex-wrap: wrap; gap: 8px; }
-.ages-inputs input { width: 68px; text-align: center; }
-
-.form-actions {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 16px;
-  margin: 8px 0 50px;
-}
-
-.identity-warning {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
-  font-size: 0.86rem; line-height: 1.5;
-  color: var(--warn);
-  background: var(--accent-soft);
-  border-left: 2px solid var(--warn);
-  padding: 10px 14px; border-radius: 0 4px 4px 0;
-  margin: 0 0 16px;
-}
-
-/* ---------- Commentaires ---------- */
-
-.comments {
-  margin: 20px 0 70px; padding-top: 20px; border-top: 1px solid var(--line);
-}
-
-.comment-list, .comment-replies { list-style: none; padding: 0; margin: 0; }
-.comment-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
-
-.comment-replies {
-  margin: 10px 0 0 24px;
-  padding-left: 16px;
-  border-left: 2px solid var(--line);
-  display: flex; flex-direction: column; gap: 10px;
-}
-
-.comment {
-  background: var(--bg-raised);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 15px 17px;
-}
-
-.comment.is-reply { background: var(--bg); }
-
-.comment-head {
-  display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; margin-bottom: 7px;
-}
-
-.comment-pseudo {
-  font-family: var(--font-display); font-weight: 600; font-size: 0.98rem;
-}
-
-.comment-stage-tag {
-  font-family: var(--font-mono); font-size: 0.64rem;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  padding: 3px 8px; border-radius: 999px;
-  border: 1px solid var(--line); color: var(--ink-dim);
-}
-
-.comment-date {
-  font-family: var(--font-mono); font-size: 0.7rem;
-  color: var(--ink-dim); margin-left: auto;
-}
-
-.comment-body {
-  margin: 0 0 10px; line-height: 1.6; color: var(--ink);
-  white-space: pre-wrap; font-size: 0.94rem;
-}
-
-.comment-empty, .comment-loading {
-  color: var(--ink-dim); font-size: 0.9rem; margin: 0 0 20px;
-}
-
-.comment-error { color: var(--warn); font-size: 0.87rem; margin: 0 0 14px; }
-
-.comment-form {
-  border: 1px solid var(--line); border-radius: 8px;
-  padding: 20px 22px 2px; background: var(--bg-raised); margin-top: 20px;
-}
-
-.comment-form-head {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 12px; margin-bottom: 14px;
-}
-
-.comment-form-head h3 {
-  font-family: var(--font-display); font-size: 1.1rem; margin: 0;
-}
-
-.reply-context {
-  font-size: 0.85rem; color: var(--ink-dim); line-height: 1.5;
-  border-left: 2px solid var(--sage); padding: 8px 12px;
-  background: var(--accent-soft); border-radius: 0 4px 4px 0; margin: 0 0 16px;
-}
-
-.comment-form-done {
-  border: 1px solid var(--sage); border-radius: 8px;
-  padding: 18px 22px; background: var(--accent-soft); margin-top: 20px;
-}
-
-.comment-form-done p { margin: 0 0 12px; line-height: 1.55; }
-
-/* ---------- Administration ---------- */
-
-.admin-bar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
-.admin-section { margin-bottom: 50px; }
-
-.admin-card {
-  border: 1px solid var(--line); border-radius: 8px;
-  padding: 17px 19px; margin-bottom: 14px; background: var(--bg-raised);
-}
-
-.admin-card h3 {
-  font-family: var(--font-display); font-size: 1.15rem; margin: 6px 0 8px;
-}
-
-.admin-meta {
-  font-family: var(--font-mono); font-size: 0.74rem;
-  color: var(--ink-dim); margin: 0 0 6px;
-}
-
-.admin-meta code { color: var(--rust); }
-
-.admin-desc {
-  font-size: 0.9rem; line-height: 1.55; color: var(--ink-dim); margin: 10px 0;
-}
-
-.admin-stage-list {
-  list-style: none; padding: 0; margin: 12px 0;
-  font-family: var(--font-mono); font-size: 0.76rem; color: var(--ink-dim);
-  display: flex; flex-direction: column; gap: 4px;
-}
-
-.admin-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-
-.admin-status {
-  font-family: var(--font-mono); font-size: 0.64rem;
-  text-transform: uppercase; letter-spacing: 0.07em;
-  padding: 3px 8px; border-radius: 999px;
-  border: 1px solid var(--line); color: var(--ink-dim);
-}
-
-.admin-status.is-published, .admin-status.is-approved, .admin-status.is-sent {
-  border-color: var(--sage); color: var(--sage);
-}
-.admin-status.is-pending { border-color: var(--gold); color: var(--gold); }
-.admin-status.is-rejected, .admin-status.is-hidden {
-  border-color: var(--rust); color: var(--rust);
-}
-
-.admin-notice {
-  border-left: 2px solid var(--sage); background: var(--accent-soft);
-  padding: 12px 16px; border-radius: 0 4px 4px 0;
-  font-size: 0.9rem; color: var(--ink); margin: 0 0 18px;
-}
-
-.admin-details summary {
-  cursor: pointer; font-family: var(--font-mono); font-size: 0.78rem;
-  color: var(--ink-dim); margin-top: 10px;
-}
-
-.admin-plain-list {
-  list-style: none; padding: 12px 0 0; margin: 0;
-  display: flex; flex-direction: column; gap: 8px; font-size: 0.86rem;
-}
-
-.admin-plain-list li { display: flex; align-items: center; gap: 10px; }
-
-/* ---------- Mentions légales ---------- */
-
-.legal { padding-bottom: 60px; max-width: 68ch; }
-
-.legal h2 {
-  font-family: var(--font-display); font-size: 1.3rem; font-weight: 600;
-  margin: 36px 0 12px; padding-top: 20px; border-top: 1px solid var(--line);
-}
-
-.legal h2:first-child { border-top: none; padding-top: 0; margin-top: 0; }
-
-.legal h3 {
-  font-family: var(--font-mono); font-size: 0.73rem; font-weight: 500;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--sage); margin: 26px 0 10px;
-}
-
-.legal p { line-height: 1.7; color: var(--ink-dim); margin: 0 0 16px; }
-
-.legal a, .site-footer a {
-  color: var(--rust); text-decoration: underline; text-underline-offset: 3px;
-}
-
-.legal-table {
-  width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 0.87rem;
-}
-
-.legal-table th, .legal-table td {
-  text-align: left; padding: 10px 12px;
-  border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.5;
-}
-
-.legal-table th {
-  font-family: var(--font-mono); font-size: 0.66rem;
-  text-transform: uppercase; letter-spacing: 0.07em;
-  color: var(--ink-dim); font-weight: 500;
-}
-
-.legal-table td { color: var(--ink-dim); }
-
-.legal-updated { font-family: var(--font-mono); font-size: 0.74rem; margin-top: 30px; }
-
-/* ---------- Pied de page ---------- */
-
-.site-footer {
-  border-top: 1px solid var(--line);
-  padding: 22px 0 50px;
-  display: flex; flex-wrap: wrap; gap: 16px;
-  align-items: center; justify-content: space-between;
-  font-family: var(--font-mono); font-size: 0.76rem; color: var(--ink-dim);
-}
-
-.empty-state {
-  padding: 40px 0; color: var(--ink-dim);
-  font-size: 0.94rem; line-height: 1.6; max-width: 60ch;
-}
-
-/* ---------- Adaptations ---------- */
-
-@media (max-width: 620px) {
-  .site-header.compact { flex-direction: column; gap: 14px; }
-  .header-actions { width: 100%; justify-content: space-between; }
-  .map-wrap { height: 340px; }
-  .filter-count { margin-left: 0; }
-  .comment-replies { margin-left: 10px; padding-left: 12px; }
-
-  .legal-table, .legal-table tbody, .legal-table tr, .legal-table td {
-    display: block; width: 100%;
-  }
-  .legal-table thead { display: none; }
-  .legal-table tr { border-bottom: 1px solid var(--line); padding: 10px 0; }
-  .legal-table td { border: none; padding: 4px 0; }
-  .legal-table td:first-child { color: var(--ink); font-weight: 600; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, html, body { transition: none !important; }
-  .ride-card:hover { transform: none; }
-}
+**Pense à rafraîchir les fichiers du projet** quand le code a beaucoup bougé, sinon les instructions décriront une version dépassée.
