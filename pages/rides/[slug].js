@@ -190,6 +190,15 @@ export default function RidePage({ ride }) {
             {" · "}
             <Link href="/contact">Contact</Link>
           </span>
+          {/* Seules les sorties proposées par un visiteur sont modifiables par
+              leur auteur. Le lien de modification lui est envoyé par email :
+              d'ici, il ne peut que le redemander. */}
+          {ride.submissionId && (
+            <span>
+              Cette sortie est la tienne ?{" "}
+              <Link href="/sortie/modifier">Corrige-la</Link>
+            </span>
+          )}
         </footer>
       </div>
     </>

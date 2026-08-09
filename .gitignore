@@ -21,6 +21,9 @@
 # Notes de travail de Claude, le dépôt est public
 CLAUDE.md
 
+# Fichier de consignes généré par Next 16 à chaque build
+AGENTS.md
+
 # Métadonnées de la CLI Vercel
 /.vercel
 

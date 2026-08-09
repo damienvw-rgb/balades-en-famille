@@ -97,11 +97,15 @@ export default function Admin() {
 
 function Submissions() {
   const [items, setItems] = useState(null);
+  const [revisions, setRevisions] = useState([]);
   const [busy, setBusy] = useState(null);
   const [notice, setNotice] = useState(null);
 
   const load = () =>
-    callApi("/api/admin/submissions").then(({ data }) => setItems(data.submissions || []));
+    callApi("/api/admin/submissions").then(({ data }) => {
+      setItems(data.submissions || []);
+      setRevisions(data.revisions || []);
+    });
 
   useEffect(() => { load(); }, []);
 
@@ -110,6 +114,20 @@ function Submissions() {
     setNotice(null);
     const { ok, data } = await postJson("/api/admin/submissions", { action, submissionId, ...extra });
     setBusy(null);
+
+    // Une correction acceptée remplace la version en ligne : elle ne paraîtra
+    // qu'après reconstruction du site, comme une publication.
+    if (ok && action === "applyEdit") {
+      setNotice(
+        data.rebuild?.triggered
+          ? "Modification acceptée. Le site se reconstruit, la sortie corrigée sera en ligne dans une minute ou deux."
+          : "Modification acceptée. Aucun deploy hook configuré : elle paraîtra au prochain déploiement."
+      );
+    }
+
+    if (ok && action === "discardEdit") {
+      setNotice("Modification écartée. La sortie reste en ligne dans sa version précédente.");
+    }
 
     if (ok && action === "approve") {
       setNotice(
@@ -150,9 +168,61 @@ function Submissions() {
     <section className="admin-section">
       <h2 className="section-title">
         Sorties proposées{pending.length > 0 ? ` (${pending.length} en attente)` : ""}
+        {revisions.length > 0
+          ? ` · ${revisions.length} modification${revisions.length > 1 ? "s" : ""} à relire`
+          : ""}
       </h2>
 
       {notice && <p className="admin-notice">{notice}</p>}
+
+      {revisions.map((r) => {
+        const source = items.find((s) => s.id === r.submissionId);
+        const km = Math.round(r.stages.reduce((t, x) => t + (x.distanceKm || 0), 0) * 10) / 10;
+
+        return (
+          <article className="admin-card" key={r.submissionId}>
+            <div className="card-top">
+              <span className="admin-status is-pending">modification proposée</span>
+            </div>
+
+            <h3>{r.info.title}</h3>
+            {source && source.info.title !== r.info.title && (
+              <p className="admin-meta">Titre en ligne : {source.info.title}</p>
+            )}
+            <p className="admin-meta">
+              {km} km · {r.stages.length} étape{r.stages.length > 1 ? "s" : ""} · par {r.author} ·{" "}
+              {new Date(r.createdAt).toLocaleDateString("fr-BE")}
+            </p>
+            {r.info.description && <p className="admin-desc">{r.info.description}</p>}
+
+            <ul className="admin-stage-list">
+              {r.stages.map((st, i) => (
+                <li key={i}>
+                  {st.title || `Trace ${i + 1}`} · {st.distanceKm} km · +{st.elevationGain} m
+                  {st.lodging?.type ? ` · ${st.lodging.type}` : ""}
+                </li>
+              ))}
+            </ul>
+
+            <p className="admin-meta">
+              Version en ligne : <a href={`/rides/${r.slug}`} target="_blank" rel="noreferrer">
+                /rides/{r.slug}
+              </a>
+            </p>
+
+            <div className="admin-actions">
+              <button type="button" className="button-primary" disabled={busy === r.submissionId}
+                onClick={() => act(r.submissionId, "applyEdit")}>
+                Accepter la modification
+              </button>
+              <button type="button" className="button-secondary" disabled={busy === r.submissionId}
+                onClick={() => act(r.submissionId, "discardEdit")}>
+                Écarter
+              </button>
+            </div>
+          </article>
+        );
+      })}
 
       {pending.length === 0 && <p className="comment-empty">Aucune proposition en attente.</p>}
 

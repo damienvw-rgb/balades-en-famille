@@ -61,7 +61,8 @@ export default function MentionsLegales() {
                 <td data-label="Pourquoi">
                   Confirmer que la demande vient de toi, te prévenir des réponses à
                   tes messages et des commentaires reçus sur une sortie que tu as
-                  proposée, et te répondre si tu écris via le formulaire de contact
+                  proposée, t'envoyer le lien qui te permet de corriger cette
+                  sortie, et te répondre si tu écris via le formulaire de contact
                 </td>
                 <td data-label="Visible publiquement">Non, jamais</td>
               </tr>

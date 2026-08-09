@@ -260,11 +260,23 @@ Un visiteur peut **proposer une sortie**, publiée seulement après ta validatio
 4. Au clic, tu reçois la notification
 5. Sur `/admin`, tu vois le détail de chaque étape, et tu approuves ou refuses
 6. À l'approbation, un Deploy Hook relance le build : `scripts/prepare-rides.mjs` écrit la sortie dans `public/rides/`, au même format que les tiennes
-7. L'auteur est prévenu de la publication
+7. L'auteur est prévenu de la publication, avec l'adresse de sa sortie et un lien pour la corriger lui-même
 
 Rien n'est publié sans ton accord.
 
-### Corriger une sortie déjà publiée
+### L'auteur corrige sa sortie
+
+L'email de publication contient deux adresses : celle de la sortie en ligne, et une adresse de modification qui n'appartient qu'à son auteur. Elle ouvre `/sortie/modifier`, le formulaire de proposition prérempli avec sa sortie.
+
+- Tous les champs sont modifiables, y compris les étapes : en ajouter, en retirer, remplacer une trace. **Une étape dont le fichier n'est pas remplacé garde la sienne**, rien n'est à renvoyer pour corriger une faute de frappe
+- Le pseudo, l'adresse email et l'adresse de la sortie ne bougent pas, même si le titre change : un lien partagé reste valable
+- Le filtre anti-spam s'applique comme au dépôt
+
+**La version en ligne n'est jamais remplacée d'office.** La correction attend dans `/admin`, à côté des propositions, et tu l'acceptes ou tu l'écartes ; la sortie reste visible dans sa version précédente d'ici là. Une sortie encore en attente de relecture, elle, est modifiée directement : elle n'a jamais été publiée, et tu la reliras de toute façon avant qu'elle paraisse. Dans les deux cas tu reçois un email.
+
+Le lien de modification vaut trois mois. Passé ce délai, ou s'il s'est perdu, l'auteur en redemande un depuis `/sortie/modifier`, en indiquant son adresse email : il reçoit alors un lien par sortie. La réponse affichée est la même que l'adresse soit connue ou non, sinon ce formulaire dirait à n'importe qui si une adresse a déjà proposé une sortie. Un discret « Cette sortie est la tienne ? » en pied des sorties proposées mène au même endroit.
+
+### Corriger une sortie toi-même
 
 Une sortie proposée par un visiteur vit dans le stockage, pas dans le dépôt : il n'y a donc pas d'`info.json` à ouvrir pour rectifier une difficulté mal évaluée ou une faute dans un titre. Le fichier `corrections.json`, à la racine, sert à ça :
 
@@ -412,6 +424,8 @@ lib/activities.js    activités, logements, difficultés, participants
 lib/gear.js          déduction du pictogramme de matériel, palette, normalisation
 lib/geo.js           pays et régions du formulaire
 lib/identity.js      liaison pseudo vers email
+lib/submissionInput.js  lecture des champs d'une sortie, au dépôt comme à la modification
+lib/editLink.js      lien de modification signé envoyé à l'auteur
 lib/spam.js          filtrage anti-spam
 lib/storage.js       Vercel Blob ou fichiers locaux
 lib/mailer.js        SMTP Gmail ou console
@@ -430,6 +444,7 @@ components/ThemeToggle.jsx       bascule clair et sombre
 pages/index.js             accueil
 pages/rides/[slug].js      fiche d'une sortie
 pages/proposer.js          formulaire de proposition
+pages/sortie/modifier.js   correction d'une sortie par son auteur
 pages/contact.js           formulaire de contact
 pages/mentions-legales.js  mentions légales
 pages/admin/index.js       modération
