@@ -1,9 +1,10 @@
 import { readToken } from "@/lib/tokens";
 import { htmlPage as page } from "@/lib/htmlPage";
 import { getComment, saveComment, threadParticipants } from "@/lib/store";
-import { bindIdentity } from "@/lib/identity";
+import { bindIdentity, applyPseudoToSubmissions } from "@/lib/identity";
 import { sendMail, siteUrl } from "@/lib/mailer";
 import { getRideAuthor } from "@/lib/rides";
+import { triggerRebuild } from "@/lib/deploy";
 
 export default async function handler(req, res) {
   const payload = readToken(req.query.token);
@@ -30,8 +31,15 @@ export default async function handler(req, res) {
   comment.verifiedAt = new Date().toISOString();
   await saveComment(comment);
 
-  // Le pseudo est maintenant réservé à cette adresse, sur tout le site
-  await bindIdentity(comment.pseudo, comment.email);
+  // Le pseudo est maintenant réservé à cette adresse, sur tout le site.
+  // S'il a changé, c'est ce nouveau nom qui vaut partout où cette adresse a
+  // publié : les commentaires le prennent à la lecture, les sorties déjà
+  // enregistrées doivent être réécrites et le site reconstruit.
+  const rename = await bindIdentity(comment.pseudo, comment.email);
+  if (rename.changed) {
+    const { published } = await applyPseudoToSubmissions(comment.email, rename.to);
+    if (published > 0) await triggerRebuild();
+  }
 
   const author = await getRideAuthor(comment.ride);
   const recipients = new Set();
@@ -70,6 +78,12 @@ export default async function handler(req, res) {
   }
 
   return res.status(200).send(
-    page("Message publié", "Merci ! Ton message est en ligne. Ton adresse email reste privée.", rideUrl)
+    page(
+      "Message publié",
+      rename.changed
+        ? `Merci ! Ton message est en ligne. Tu apparais désormais sous « ${rename.to} » partout où tu as publié, y compris sur tes anciens messages. Ton adresse email reste privée.`
+        : "Merci ! Ton message est en ligne. Ton adresse email reste privée.",
+      rideUrl
+    )
   );
 }

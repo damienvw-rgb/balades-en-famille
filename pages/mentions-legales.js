@@ -101,6 +101,15 @@ export default function MentionsLegales() {
             formulaire te signale, le cas échéant, qu'un autre pseudo est déjà
             associé à ton adresse.
           </p>
+          <p>
+            Tu peux en changer quand tu veux : indique simplement un nouveau pseudo
+            en écrivant un commentaire ou en proposant une sortie, avec la même
+            adresse email. Le changement t'est annoncé dans l'email de confirmation
+            et ne prend effet qu'après ton clic sur le lien. Ton nouveau pseudo
+            remplace alors l'ancien partout où tu as publié, y compris sur tes
+            messages et tes sorties déjà en ligne. Ton ancien pseudo reste réservé
+            à ton adresse : personne d'autre ne peut le reprendre.
+          </p>
 
           <h3>Base légale et durée de conservation</h3>
           <p>

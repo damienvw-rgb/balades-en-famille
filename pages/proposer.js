@@ -54,7 +54,9 @@ export default function Proposer() {
           body: JSON.stringify({ pseudo: form.author, email: form.authorEmail }),
         });
         const data = await res.json();
-        setIdentity(data.ok ? null : data);
+        // Une réponse bonne mais qui annonce un changement de pseudo est gardée :
+        // ce n'est pas une erreur, c'est un avertissement à afficher.
+        setIdentity(data.ok && !data.rename ? null : data);
       } catch {
         setIdentity(null);
       }
@@ -375,12 +377,14 @@ export default function Proposer() {
             </div>
 
             {identity && (
-              <p className="identity-warning">
-                {identity.error}
+              <p className={identity.ok ? "identity-notice" : "identity-warning"}>
+                {identity.ok ? identity.notice : identity.error}
                 {identity.suggestion && (
                   <button type="button" className="link-button"
                     onClick={() => setForm((f) => ({ ...f, author: identity.suggestion }))}>
-                    Utiliser « {identity.suggestion} »
+                    {identity.ok
+                      ? `Garder « ${identity.suggestion} »`
+                      : `Utiliser « ${identity.suggestion} »`}
                   </button>
                 )}
               </p>
@@ -406,7 +410,7 @@ export default function Proposer() {
 
           <div className="form-actions">
             <button type="submit" className="button-primary"
-              disabled={state.status === "sending" || Boolean(identity)}>
+              disabled={state.status === "sending" || Boolean(identity && !identity.ok)}>
               {state.status === "sending" ? "Envoi…" : "Proposer cette sortie"}
             </button>
           </div>

@@ -39,7 +39,8 @@ Fichiers clés :
 - lib/gpx.js          parsing GPX, distance, dénivelé
 - lib/activities.js   activités, logements, difficultés, emojis matériel, participants
 - lib/geo.js          pays et régions du formulaire
-- lib/identity.js     liaison pseudo vers email
+- lib/identity.js     liaison pseudo vers email, changement de pseudo
+- lib/deploy.js       demande de reconstruction du site à Vercel
 - lib/spam.js         filtrage anti-spam en sept couches
 - lib/storage.js      abstraction Blob ou fichiers locaux
 - lib/mailer.js       abstraction SMTP ou console
@@ -56,6 +57,9 @@ Fichiers clés :
    depuis /admin.
 4. Un pseudo appartient à une adresse email. Toute fonctionnalité acceptant un
    pseudo doit appeler checkIdentity() puis bindIdentity() après confirmation.
+   Une adresse connue a le droit de changer de pseudo : bindIdentity() signale
+   le changement, qui doit alors être répercuté partout où cette adresse a
+   publié. C'est toujours le dernier pseudo confirmé qui s'affiche.
 5. Un champ facultatif non renseigné n'affiche rien : pas de bloc vide, pas de
    libellé orphelin.
 6. Le site doit continuer à fonctionner sans aucune variable d'environnement,

@@ -11,18 +11,7 @@ import {
 } from "@/lib/store";
 import { sendMail, siteUrl } from "@/lib/mailer";
 import { editUrl, rideUrl } from "@/lib/editLink";
-
-/** Demande à Vercel de reconstruire le site pour publier la sortie approuvée. */
-async function triggerRebuild() {
-  const hook = process.env.VERCEL_DEPLOY_HOOK_URL;
-  if (!hook) return { triggered: false, reason: "aucun-deploy-hook" };
-  try {
-    await fetch(hook, { method: "POST" });
-    return { triggered: true };
-  } catch {
-    return { triggered: false, reason: "appel-echoue" };
-  }
-}
+import { triggerRebuild } from "@/lib/deploy";
 
 /** Les traces GPX sont trop volumineuses pour la liste affichée dans /admin. */
 function sansTraces(stages) {
