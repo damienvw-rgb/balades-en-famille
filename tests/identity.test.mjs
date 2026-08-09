@@ -13,12 +13,16 @@ process.env.APP_SECRET = "secret-de-test-uniquement";
 delete process.env.BLOB_READ_WRITE_TOKEN;
 delete process.env.BLOB_STORE_ID;
 
+const origine = process.cwd();
 const workdir = await fs.mkdtemp(path.join(os.tmpdir(), "identite-"));
 process.chdir(workdir);
 
 const { checkIdentity, bindIdentity, normalizePseudo } = await import("../lib/identity.js");
 
 test.after(async () => {
+  // Revenir au point de départ avant d'effacer : Windows verrouille le
+  // répertoire courant d'un processus et refuse de le supprimer (EBUSY).
+  process.chdir(origine);
   await fs.rm(workdir, { recursive: true, force: true });
 });
 
