@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/admin";
 import { listComments, deleteComment, saveComment, getComment } from "@/lib/store";
 import { getAllRideSlugs } from "@/lib/rides";
+import { currentPseudos } from "@/lib/identity";
 
 export default async function handler(req, res) {
   if (!requireAdmin(req, res)) return;
@@ -17,7 +18,13 @@ export default async function handler(req, res) {
       }
     }
     all.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-    return res.status(200).json({ comments: all });
+
+    // Comme sur le site : le pseudo montré est le dernier confirmé par cette
+    // adresse, sinon /admin afficherait des noms que plus personne ne voit.
+    const pseudos = await currentPseudos(all.map((c) => c.emailHash));
+    const named = all.map((c) => ({ ...c, pseudo: pseudos.get(c.emailHash) || c.pseudo }));
+
+    return res.status(200).json({ comments: named });
   }
 
   if (req.method !== "POST") {

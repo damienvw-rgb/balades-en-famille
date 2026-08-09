@@ -24,7 +24,8 @@ export default async function handler(req, res) {
   const { info, error } = readInfo(b);
   if (error) return res.status(400).json({ error });
 
-  // Un pseudo appartient à une adresse, sur tout le site
+  // Un pseudo appartient à une adresse, sur tout le site. Une adresse connue
+  // peut en changer : le nouveau nom s'applique partout à la confirmation.
   const identity = await checkIdentity(b.author, b.authorEmail);
   if (!identity.ok) {
     return res.status(409).json({ error: identity.error, suggestion: identity.suggestion });
@@ -76,6 +77,17 @@ export default async function handler(req, res) {
       "",
       link,
       "",
+      // Le changement de pseudo n'est jamais silencieux : il est annoncé ici,
+      // et c'est le clic sur le lien qui le valide.
+      ...(identity.rename
+        ? [
+            `Tu publiais jusqu'ici sous « ${identity.rename} ». En cliquant sur ce lien,`,
+            `« ${author} » le remplacera partout où tu as publié sur le site, y compris`,
+            "sur tes sorties et tes commentaires déjà en ligne. Si ce n'est pas ce que",
+            "tu veux, ignore ce message et renvoie ta sortie sous ton pseudo habituel.",
+            "",
+          ]
+        : []),
       "Elle sera ensuite relue avant publication.",
       "",
       "Ton adresse ne sera jamais affichée sur le site. Elle sert à te prévenir",

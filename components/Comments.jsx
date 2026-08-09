@@ -147,13 +147,18 @@ function CommentForm({ ride, stages, replyTo, onCancel, onSent }) {
           body: JSON.stringify({ pseudo: form.pseudo, email: form.email }),
         });
         const data = await res.json();
-        setIdentity(data.ok ? null : data);
+        // On garde aussi la réponse quand elle est bonne mais annonce un
+        // changement de pseudo : ce n'est pas une erreur, c'est un avertissement.
+        setIdentity(data.ok && !data.rename ? null : data);
       } catch {
         setIdentity(null);
       }
     }, 600);
     return () => clearTimeout(timer);
   }, [form.pseudo, form.email]);
+
+  // Seul un pseudo pris par quelqu'un d'autre empêche l'envoi
+  const blocked = Boolean(identity && !identity.ok);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -218,12 +223,14 @@ function CommentForm({ ride, stages, replyTo, onCancel, onSent }) {
       </div>
 
       {identity && (
-        <p className="identity-warning">
-          {identity.error}
+        <p className={identity.ok ? "identity-notice" : "identity-warning"}>
+          {identity.ok ? identity.notice : identity.error}
           {identity.suggestion && (
             <button type="button" className="link-button"
               onClick={() => setForm((f) => ({ ...f, pseudo: identity.suggestion }))}>
-              Utiliser « {identity.suggestion} »
+              {identity.ok
+                ? `Garder « ${identity.suggestion} »`
+                : `Utiliser « ${identity.suggestion} »`}
             </button>
           )}
         </p>
@@ -264,7 +271,7 @@ function CommentForm({ ride, stages, replyTo, onCancel, onSent }) {
 
       <div className="form-actions">
         <button type="submit" className="button-primary"
-          disabled={state.status === "sending" || Boolean(identity)}>
+          disabled={state.status === "sending" || blocked}>
           {state.status === "sending" ? "Envoi…" : "Envoyer"}
         </button>
         <p className="field-note">

@@ -1,9 +1,10 @@
 import { readToken } from "@/lib/tokens";
 import { htmlPage } from "@/lib/htmlPage";
 import { getSubmission, saveSubmission } from "@/lib/store";
-import { bindIdentity } from "@/lib/identity";
+import { bindIdentity, applyPseudoToSubmissions } from "@/lib/identity";
 import { sendMail, siteUrl } from "@/lib/mailer";
 import { formatPlace } from "@/lib/activities";
+import { triggerRebuild } from "@/lib/deploy";
 
 export default async function handler(req, res) {
   const payload = readToken(req.query.token);
@@ -31,11 +32,15 @@ export default async function handler(req, res) {
   submission.verifiedAt = new Date().toISOString();
   await saveSubmission(submission);
 
-  // Le pseudo est désormais réservé à cette adresse, sur tout le site
-  await bindIdentity(submission.author, submission.authorEmail);
-
-  // L'adresse est confirmée : le pseudo lui est réservé sur tout le site
-  await bindIdentity(submission.authorEmail, submission.author);
+  // Le pseudo est désormais réservé à cette adresse, sur tout le site. S'il a
+  // changé, il remplace le précédent partout où cette adresse a publié : les
+  // sorties déjà enregistrées sont réécrites, et le site reconstruit si l'une
+  // d'elles est déjà en ligne.
+  const rename = await bindIdentity(submission.author, submission.authorEmail);
+  if (rename.changed) {
+    const { published } = await applyPseudoToSubmissions(submission.authorEmail, rename.to);
+    if (published > 0) await triggerRebuild();
+  }
 
   if (process.env.ADMIN_EMAIL) {
     const totalKm =
@@ -62,7 +67,9 @@ export default async function handler(req, res) {
     .status(200)
     .send(htmlPage(
       "Proposition transmise",
-      "Merci ! Ta sortie va être relue avant publication. Tu recevras un email dès qu'elle sera en ligne.",
+      rename.changed
+        ? `Merci ! Ta sortie va être relue avant publication. Tu recevras un email dès qu'elle sera en ligne. Tu apparais désormais sous « ${rename.to} » partout où tu as publié : le carnet affiche le nouveau nom après sa prochaine mise à jour, quelques minutes plus tard.`
+        : "Merci ! Ta sortie va être relue avant publication. Tu recevras un email dès qu'elle sera en ligne.",
       "/"
     ));
 }

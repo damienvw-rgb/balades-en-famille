@@ -2,7 +2,7 @@ import { id, saveComment, listPublishedComments, publicComment, slugify, getComm
 import { createToken, hashEmail } from "@/lib/tokens";
 import { sendMail, siteUrl, usingSmtp } from "@/lib/mailer";
 import { inspectContent, checkRateLimit, clientIp, SPAM_MESSAGES } from "@/lib/spam";
-import { checkIdentity } from "@/lib/identity";
+import { checkIdentity, currentPseudos } from "@/lib/identity";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -10,8 +10,18 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     const ride = slugify(req.query.ride || "");
     if (!ride) return res.status(400).json({ error: "Sortie non précisée." });
+
+    // Le pseudo affiché est celui que porte l'adresse aujourd'hui, pas celui
+    // écrit le jour du message : quelqu'un qui change de pseudo et le confirme
+    // par email est renommé sur tout ce qu'il a déjà publié. Le nom enregistré
+    // ne sert que de repli, pour les messages antérieurs à cette table.
+    const published = await listPublishedComments(ride);
+    const pseudos = await currentPseudos(published.map((c) => c.emailHash));
+
     return res.status(200).json({
-      comments: (await listPublishedComments(ride)).map(publicComment),
+      comments: published.map((c) =>
+        publicComment(c, pseudos.get(c.emailHash) || c.pseudo)
+      ),
     });
   }
 
@@ -29,7 +39,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Adresse email invalide." });
   }
 
-  // Un pseudo appartient à une adresse : on ne peut pas écrire sous celui d'un autre
+  // Un pseudo appartient à une adresse : on ne peut pas écrire sous celui d'un
+  // autre. En revanche, une adresse connue a le droit de changer de pseudo :
+  // le changement est appliqué partout à la confirmation de l'email.
   const identity = await checkIdentity(pseudo, email);
   if (!identity.ok) {
     return res.status(409).json({ error: identity.error, suggestion: identity.suggestion });
@@ -83,6 +95,17 @@ export default async function handler(req, res) {
       "",
       link,
       "",
+      // Le changement de pseudo n'est jamais silencieux : il est annoncé ici,
+      // et c'est le clic sur le lien qui le valide.
+      ...(identity.rename
+        ? [
+            `Tu publiais jusqu'ici sous « ${identity.rename} ». En cliquant sur ce lien,`,
+            `« ${identity.pseudo} » le remplacera partout où tu as publié sur le site,`,
+            "y compris sur tes anciens messages. Si ce n'est pas ce que tu veux,",
+            "ignore ce message et écris à nouveau sous ton pseudo habituel.",
+            "",
+          ]
+        : []),
       "Ton adresse email ne sera jamais affichée. Elle sert à cette confirmation",
       "et à te prévenir si quelqu'un répond.",
       "",

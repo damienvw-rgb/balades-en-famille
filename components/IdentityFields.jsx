@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
  * Couple pseudo / email, avec vérification en direct.
  * Un pseudo appartient à une adresse : cette vérification évite qu'un visiteur
  * s'exprime sous le nom d'un autre, sur les commentaires comme sur les sorties.
+ * Une adresse connue peut en revanche changer de pseudo : ce n'est pas une
+ * erreur, c'est annoncé, et le changement sera appliqué à la confirmation.
  */
 export default function IdentityFields({
   pseudo, email, onPseudoChange, onEmailChange,
@@ -34,8 +36,9 @@ export default function IdentityFields({
     return () => clearTimeout(timer.current);
   }, [pseudo, email]);
 
-  const problem = check && !check.ok && !check.incomplete;
-  const known = check && check.ok && check.known;
+  const problem = check && check.ok === false;
+  const rename = check && check.ok && check.rename;
+  const known = check && check.ok && check.known && !check.rename;
 
   return (
     <>
@@ -69,7 +72,7 @@ export default function IdentityFields({
 
       {problem && (
         <p className="identity-warning">
-          {check.message}
+          {check.error}
           {check.suggestion && (
             <button
               type="button"
@@ -79,6 +82,19 @@ export default function IdentityFields({
               Utiliser « {check.suggestion} »
             </button>
           )}
+        </p>
+      )}
+
+      {rename && (
+        <p className="identity-notice">
+          {check.notice}
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => onPseudoChange(check.rename)}
+          >
+            Garder « {check.rename} »
+          </button>
         </p>
       )}
 

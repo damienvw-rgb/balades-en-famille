@@ -318,10 +318,23 @@ Les fils restent à deux niveaux : une réponse à une réponse se rattache au m
 
 Une fois une adresse confirmée, le pseudo lui est rattaché pour tout le site, commentaires comme propositions.
 
-- Quelqu'un tente un pseudo déjà pris : « Ce pseudo est déjà utilisé par quelqu'un d'autre. »
-- Une adresse connue arrive avec un autre pseudo : le sien lui est proposé, avec un bouton pour le reprendre.
+- Quelqu'un tente un pseudo déjà pris : « Ce pseudo est déjà utilisé par quelqu'un d'autre. » L'envoi est bloqué.
+- Une adresse connue arrive avec un autre pseudo : c'est un changement de nom, pas une usurpation. Le formulaire l'annonce, propose un bouton pour garder l'ancien, et laisse l'envoi se faire.
 
 La vérification se fait pendant la saisie, sans attendre l'envoi. Le lien n'est enregistré qu'après confirmation de l'adresse : sinon il suffirait d'un formulaire avec une fausse adresse pour réserver un pseudo qu'on ne possède pas.
+
+### Changer de pseudo
+
+Personne n'est enfermé dans son premier pseudo. Il suffit d'en saisir un autre en écrivant un commentaire ou en proposant une sortie, avec la même adresse email qu'avant.
+
+Le changement est annoncé dans l'email de confirmation, et c'est le clic sur le lien qui le valide. Sans ce clic, rien ne bouge : le pseudo affiché ne peut donc jamais être changé par quelqu'un qui ne relève pas la boîte mail.
+
+Une fois confirmé, **c'est le dernier pseudo qui s'affiche partout où cette adresse a publié**, y compris sur ses anciens messages et ses anciennes sorties.
+
+- Les commentaires portent l'empreinte de l'adresse de leur auteur. L'API résout le pseudo à la lecture : le changement est visible tout de suite, sans rien réécrire.
+- Les sorties sont figées dans `public/rides/` au moment du build. Leur auteur est donc réécrit dans le stockage, et une reconstruction est demandée si l'une d'elles est déjà en ligne : le carnet affiche le nouveau nom quelques minutes plus tard.
+
+Les pseudos abandonnés restent réservés à la même adresse. Personne ne peut récupérer le pseudo d'un autre après coup pour se faire passer pour lui, et son porteur d'origine peut y revenir quand il veut.
 
 ### Le formulaire de contact
 
@@ -437,7 +450,8 @@ lib/gpx.js           parsing GPX, distance, dénivelé
 lib/activities.js    activités, logements, difficultés, participants
 lib/gear.js          déduction du pictogramme de matériel, palette, normalisation
 lib/geo.js           pays et régions du formulaire
-lib/identity.js      liaison pseudo vers email
+lib/identity.js      liaison pseudo vers email, changement de pseudo
+lib/deploy.js        demande de reconstruction du site à Vercel
 lib/submissionInput.js  lecture des champs d'une sortie, au dépôt comme à la modification
 lib/editLink.js      lien de modification signé envoyé à l'auteur
 lib/spam.js          filtrage anti-spam
