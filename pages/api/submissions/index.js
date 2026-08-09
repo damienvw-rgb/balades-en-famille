@@ -7,7 +7,8 @@ import { ACTIVITIES, DIFFICULTIES } from "@/lib/activities";
 import { gearEmoji, isKnownGearEmoji } from "@/lib/gear";
 import { parseGpx } from "@/lib/gpx";
 
-export const config = { api: { bodyParser: { sizeLimit: "8mb" } } };
+// Plafond partagé avec le formulaire, voir lib/limits.js.
+export const config = { api: { bodyParser: { sizeLimit: "4mb" } } };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MAX_STAGES = 12;

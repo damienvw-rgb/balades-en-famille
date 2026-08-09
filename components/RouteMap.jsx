@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip } from "react-leaflet";
 import { mapLayerFor } from "@/lib/activities";
 
@@ -30,18 +30,15 @@ const LAYERS = {
   },
 };
 
-export default function RouteMap({ stages, activity = null, visibleStages = null }) {
+export default function RouteMap({ stages, activity = null }) {
   // Le fond de départ dépend de l'activité : relief en randonnée, cyclable à
   // vélo, plan sinon. Le visiteur peut toujours en changer avec les boutons.
   const [layer, setLayer] = useState(() => mapLayerFor(activity));
 
-  const drawable = stages.filter(
-    (s) => s.points.length > 0 && (!visibleStages || visibleStages.includes(s.file))
-  );
-  const forBounds = drawable.length > 0 ? drawable : stages.filter((s) => s.points.length > 0);
-  if (forBounds.length === 0) return null;
+  const drawable = stages.filter((s) => s.points.length > 0);
+  if (drawable.length === 0) return null;
 
-  const allPoints = forBounds.flatMap((s) => s.points);
+  const allPoints = drawable.flatMap((s) => s.points);
   const lats = allPoints.map((p) => p.lat);
   const lons = allPoints.map((p) => p.lon);
   const bounds = [
@@ -87,7 +84,10 @@ export default function RouteMap({ stages, activity = null, visibleStages = null
           const start = positions[0];
           const end = positions[positions.length - 1];
           return (
-            <div key={stage.file}>
+            // Fragment et non div : les enfants de MapContainer sont des
+            // couches Leaflet, pas des éléments du DOM. Un div se retrouverait
+            // inséré dans le conteneur de la carte, par dessus les tuiles.
+            <Fragment key={stage.file}>
               <Polyline positions={positions} pathOptions={{ color: stage.color, weight: 4 }}>
                 {multi && (
                   <Tooltip sticky>
@@ -107,7 +107,7 @@ export default function RouteMap({ stages, activity = null, visibleStages = null
                   pathOptions={{ color: stage.color, fillColor: stage.color, fillOpacity: 1, weight: 2 }}
                 />
               )}
-            </div>
+            </Fragment>
           );
         })}
       </MapContainer>

@@ -10,6 +10,7 @@
  */
 import fs from "fs/promises";
 import path from "path";
+import { purgeRateLimits } from "../lib/spam.js";
 
 const OUT_DIR = path.join(process.cwd(), "public", "rides");
 const MANIFEST = path.join(OUT_DIR, ".generated.json");
@@ -85,16 +86,35 @@ async function loadSubmissions() {
   // Repli local : les mêmes fichiers que le pilote de développement
   console.log("[prepare] Aucun stockage Blob configuré, repli sur .data/.");
   const dir = path.join(process.cwd(), ".data", "submissions");
+
+  let names;
   try {
-    const names = await fs.readdir(dir);
-    const out = [];
-    for (const name of names.filter((n) => n.endsWith(".json"))) {
-      out.push(JSON.parse(await fs.readFile(path.join(dir, name), "utf-8")));
-    }
-    return out;
+    names = await fs.readdir(dir);
   } catch {
-    return [];
+    return []; // pas de dossier .data/submissions, rien à intégrer
   }
+
+  // Chaque fichier est lu séparément. Sans ça, un seul JSON mal formé faisait
+  // échouer la lecture entière et le site se reconstruisait sans aucune
+  // proposition, silencieusement.
+  const out = [];
+  let unreadable = 0;
+  for (const name of names.filter((n) => n.endsWith(".json"))) {
+    try {
+      out.push(JSON.parse(await fs.readFile(path.join(dir, name), "utf-8")));
+    } catch (err) {
+      unreadable += 1;
+      console.warn(`[prepare] .data/submissions/${name} illisible : ${err.message}`);
+    }
+  }
+
+  if (unreadable > 0) {
+    console.warn(
+      `[prepare] ATTENTION : ${unreadable} proposition(s) locale(s) illisible(s), ignorée(s).`
+    );
+  }
+
+  return out;
 }
 
 /**
@@ -122,6 +142,40 @@ async function loadCorrections() {
   }
 }
 
+async function exists(target) {
+  try {
+    await fs.access(target);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Renvoie un slug encore libre dans public/rides/.
+ *
+ * On teste le dossier lui-même, pas son info.json : une sortie du dépôt peut
+ * n'être qu'un dossier de .gpx sans info.json, et elle doit garder son adresse.
+ *
+ * Le suffixe reprend le début de l'identifiant de la proposition plutôt qu'un
+ * simple compteur : combiné au tri par date d'envoi ci-dessous, l'adresse
+ * attribuée à une sortie ne change plus au fil des builds suivants.
+ */
+async function freeSlug(base, submissionId) {
+  const clean = base || submissionId.slice(0, 8);
+  if (!(await exists(path.join(OUT_DIR, clean)))) return clean;
+
+  const suffixed = `${clean}-${submissionId.slice(0, 6)}`;
+  if (!(await exists(path.join(OUT_DIR, suffixed)))) return suffixed;
+
+  // Filet de sécurité : deux identifiants au même préfixe restent possibles.
+  for (let n = 2; n < 100; n += 1) {
+    const candidate = `${suffixed}-${n}`;
+    if (!(await exists(path.join(OUT_DIR, candidate)))) return candidate;
+  }
+  return `${suffixed}-${Date.now()}`;
+}
+
 /** Supprime les dossiers issus d'un build précédent, sans toucher aux tiens. */
 async function cleanPrevious() {
   try {
@@ -135,83 +189,21 @@ async function cleanPrevious() {
 }
 
 /**
- * Écrit une trace fusionnée pour chaque sortie à plusieurs étapes, afin que le
- * visiteur puisse récupérer l'itinéraire complet en un seul fichier.
- * Chaque étape reste un segment distinct : les GPS et Komoot les reconnaissent.
- */
-async function buildMergedTracks() {
-  const slugs = (await fs.readdir(OUT_DIR, { withFileTypes: true }))
-    .filter((d) => d.isDirectory() && !d.name.startsWith("."))
-    .map((d) => d.name);
-
-  for (const slug of slugs) {
-    const dir = path.join(OUT_DIR, slug);
-    const files = (await fs.readdir(dir))
-      .filter((f) => f.toLowerCase().endsWith(".gpx") && f !== MERGED_NAME)
-      .sort((a, b) => a.localeCompare(b, "fr", { numeric: true }));
-
-    const mergedPath = path.join(dir, MERGED_NAME);
-
-    if (files.length < 2) {
-      await fs.rm(mergedPath, { force: true });
-      continue;
-    }
-
-    // Ordre des étapes déclaré dans info.json s'il existe
-    let ordered = files;
-    try {
-      const info = JSON.parse(await fs.readFile(path.join(dir, "info.json"), "utf-8"));
-      if (Array.isArray(info.stages) && info.stages.length > 0) {
-        const declared = info.stages.map((s) => s.file).filter((f) => files.includes(f));
-        if (declared.length > 0) ordered = declared;
-      }
-    } catch {
-      /* pas d'info.json : ordre alphabétique */
-    }
-
-    const segments = [];
-    for (const file of ordered) {
-      const xml = await fs.readFile(path.join(dir, file), "utf-8");
-      // On récupère les segments de points tels quels, sans les réécrire
-      const matches = xml.match(/<trkseg[\s\S]*?<\/trkseg>/g) || [];
-      for (const seg of matches) segments.push(seg);
-    }
-
-    if (segments.length === 0) {
-      await fs.rm(mergedPath, { force: true });
-      continue;
-    }
-
-    const name = slug.replace(/-/g, " ");
-    const gpx = [
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<gpx version="1.1" creator="Partage de balades familiales" xmlns="http://www.topografix.com/GPX/1/1">',
-      "  <metadata>",
-      `    <name>${name}</name>`,
-      "  </metadata>",
-      "  <trk>",
-      `    <name>${name}</name>`,
-      ...segments.map((seg) => `    ${seg.trim()}`),
-      "  </trk>",
-      "</gpx>",
-      "",
-    ].join("\n");
-
-    await fs.writeFile(mergedPath, gpx, "utf-8");
-  }
-}
-
-/**
  * Assemble les traces d'une sortie en un seul fichier, pour le visiteur qui
  * veut charger l'itinéraire complet dans son GPS en une fois. Chaque étape
  * reste un segment distinct, donc rien n'est perdu.
  */
 async function buildMergedGpx(dir, slug) {
-  let info;
+  // info.json est facultatif : une sortie ajoutée à la main peut n'être qu'un
+  // dossier de .gpx. Elle a droit au parcours complet comme les autres, sinon
+  // le bouton de téléchargement de sa fiche pointerait vers un fichier absent.
+  let info = {};
   try {
     info = JSON.parse(await fs.readFile(path.join(dir, "info.json"), "utf-8"));
-  } catch {
-    return false;
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      console.warn(`[prepare] ${slug}/info.json illisible, ordre alphabétique : ${err.message}`);
+    }
   }
 
   let files;
@@ -280,22 +272,24 @@ async function main() {
     return;
   }
 
-  const approved = submissions.filter((s) => s.status === "approved");
+  // Tri par date d'envoi : c'est lui qui décide, en cas de titres identiques,
+  // qui garde l'adresse courte et qui reçoit le suffixe. Sans ce tri, l'ordre
+  // dépendrait de celui du stockage, et deux builds successifs pourraient
+  // intervertir les adresses de deux sorties déjà en ligne.
+  const approved = submissions
+    .filter((s) => s.status === "approved")
+    .sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
   const corrections = await loadCorrections();
   const applied = [];
   const written = [];
 
   for (const s of approved) {
-    // Une sortie ajoutée à la main dans le dépôt a toujours la priorité
-    let slug = s.slug;
-    try {
-      await fs.access(path.join(OUT_DIR, slug, "info.json"));
-      if (!written.includes(slug)) {
-        slug = `${slug}-${s.id.slice(0, 6)}`;
-      }
-    } catch {
-      /* le dossier n'existe pas, on garde le slug */
-    }
+    // Le slug doit rester libre, quelle que soit l'origine de l'occupant :
+    // une sortie du dépôt, qui a toujours la priorité, ou une proposition
+    // déjà écrite plus tôt dans ce même build. Deux visiteurs qui proposent
+    // le même titre doivent obtenir deux adresses distinctes, sinon la
+    // seconde sortie écrase la première sans que personne ne le voie.
+    const slug = await freeSlug(s.slug, s.id);
 
     const dir = path.join(OUT_DIR, slug);
     await fs.mkdir(dir, { recursive: true });
@@ -330,8 +324,6 @@ async function main() {
 
   await fs.writeFile(MANIFEST, JSON.stringify({ slugs: written }, null, 2), "utf-8");
 
-  await buildMergedTracks();
-
   console.log(
     written.length > 0
       ? `[prepare] ${written.length} sortie(s) proposée(s) intégrée(s) : ${written.join(", ")}`
@@ -360,6 +352,15 @@ async function main() {
     if (await buildMergedGpx(path.join(OUT_DIR, slug), slug)) merged += 1;
   }
   console.log(`[prepare] ${merged} parcours complet(s) généré(s).`);
+
+  // Ménage des compteurs anti-spam expirés. Le build est le bon moment : c'est
+  // le seul passage régulier côté serveur, et rien n'en dépend.
+  try {
+    const { removed, kept } = await purgeRateLimits();
+    console.log(`[prepare] Compteurs anti-spam : ${removed} purgé(s), ${kept} actif(s).`);
+  } catch (err) {
+    console.warn(`[prepare] Purge des compteurs impossible, ignorée : ${err.message}`);
+  }
 }
 
 main().catch((err) => {

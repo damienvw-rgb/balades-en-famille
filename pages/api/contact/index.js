@@ -3,15 +3,9 @@ import { createToken } from "@/lib/tokens";
 import { sendMail, siteUrl, usingSmtp } from "@/lib/mailer";
 import { inspectContent, checkRateLimit, clientIp, SPAM_MESSAGES } from "@/lib/spam";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+import { CONTACT_SUBJECTS as SUBJECTS } from "@/lib/contactSubjects";
 
-export const SUBJECTS = {
-  bug: "Signaler un problème",
-  amelioration: "Proposer une amélioration",
-  modification: "Modifier ou retirer un contenu que j'ai publié",
-  contenu: "Signaler un contenu inapproprié",
-  autre: "Autre",
-};
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

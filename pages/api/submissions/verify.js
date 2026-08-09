@@ -31,11 +31,9 @@ export default async function handler(req, res) {
   submission.verifiedAt = new Date().toISOString();
   await saveSubmission(submission);
 
-  // Le pseudo est désormais réservé à cette adresse, sur tout le site
+  // L'adresse est confirmée : le pseudo lui est réservé sur tout le site.
+  // L'ordre des arguments compte, bindIdentity attend (pseudo, email).
   await bindIdentity(submission.author, submission.authorEmail);
-
-  // L'adresse est confirmée : le pseudo lui est réservé sur tout le site
-  await bindIdentity(submission.authorEmail, submission.author);
 
   if (process.env.ADMIN_EMAIL) {
     const totalKm =

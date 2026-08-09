@@ -134,6 +134,20 @@ export default function MentionsLegales() {
             technique existe, créé seulement lors d'une connexion à l'espace
             d'administration : il ne concerne donc pas les visiteurs.
           </p>
+          <p>
+            Les polices de caractères sont servies depuis ce site, pas depuis un
+            service extérieur : afficher une page n'envoie ton adresse IP à
+            personne d'autre qu'à l'hébergeur.
+          </p>
+          <p>
+            Une seule exception, et elle est visible : les fonds de carte. Quand
+            une fiche de sortie affiche sa carte, ton navigateur va chercher les
+            tuiles chez OpenStreetMap, CyclOSM ou OpenTopoMap, qui reçoivent donc
+            ton adresse IP à ce moment-là. Ce sont des projets associatifs sans
+            publicité, et c'est la contrepartie d'une carte libre et sans clé
+            d'accès commerciale. Les pages sans carte ne déclenchent aucun appel
+            extérieur.
+          </p>
 
           <h2>Un mot sur les pictogrammes</h2>
           <p>

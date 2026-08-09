@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import { callApi, postJson } from "@/lib/api";
 
 function formatDate(iso) {
   try {
@@ -18,13 +19,13 @@ export default function Comments({ ride, stages = [] }) {
   const [showForm, setShowForm] = useState(false);
 
   const load = async () => {
-    try {
-      const res = await fetch(`/api/comments?ride=${encodeURIComponent(ride)}`);
-      if (!res.ok) throw new Error();
-      setComments((await res.json()).comments);
-    } catch {
-      setError("Les commentaires n'ont pas pu être chargés.");
+    const { ok, data } = await callApi(`/api/comments?ride=${encodeURIComponent(ride)}`);
+    if (!ok) {
+      setError(data.error || "Les commentaires n'ont pas pu être chargés.");
+      return;
     }
+    setError(null);
+    setComments(data.comments || []);
   };
 
   useEffect(() => {
@@ -139,17 +140,13 @@ function CommentForm({ ride, stages, replyTo, onCancel, onSent }) {
       return;
     }
     const timer = setTimeout(async () => {
-      try {
-        const res = await fetch("/api/identity/check", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pseudo: form.pseudo, email: form.email }),
-        });
-        const data = await res.json();
-        setIdentity(data.ok ? null : data);
-      } catch {
-        setIdentity(null);
-      }
+      const { ok, data } = await postJson("/api/identity/check", {
+        pseudo: form.pseudo,
+        email: form.email,
+      });
+      // Une vérification qui échoue ne doit pas bloquer la saisie : la route
+      // d'envoi refera le contrôle, elle seule fait autorité.
+      setIdentity(ok && !data.ok ? data : null);
     }, 600);
     return () => clearTimeout(timer);
   }, [form.pseudo, form.email]);
@@ -157,27 +154,20 @@ function CommentForm({ ride, stages, replyTo, onCancel, onSent }) {
   const submit = async (e) => {
     e.preventDefault();
     setState({ status: "sending", message: null });
-    try {
-      const res = await fetch("/api/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          ride,
-          parentId: replyTo?.id || null,
-          renderedAt: renderedAt.current,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setState({ status: "error", message: data.error || "Envoi impossible." });
-        return;
-      }
-      setState({ status: "sent", message: data.message });
-      onSent?.();
-    } catch {
-      setState({ status: "error", message: "Envoi impossible, réessaie plus tard." });
+
+    const { ok, data } = await postJson("/api/comments", {
+      ...form,
+      ride,
+      parentId: replyTo?.id || null,
+      renderedAt: renderedAt.current,
+    });
+
+    if (!ok) {
+      setState({ status: "error", message: data.error || "Envoi impossible." });
+      return;
     }
+    setState({ status: "sent", message: data.message });
+    onSent?.();
   };
 
   if (state.status === "sent") {

@@ -21,12 +21,8 @@ export default function Document() {
   return (
     <Html lang="fr" data-theme="light">
       <Head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-          rel="stylesheet"
-        />
+        {/* Les fontes sont auto-hébergées et chargées depuis _app.js
+            (voir lib/fonts.js) : plus aucun appel à Google au chargement. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </Head>
       <body>

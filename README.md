@@ -244,6 +244,14 @@ npm run dev
 
 Puis ouvre http://localhost:3000
 
+Pour lancer les tests :
+
+```bash
+npm test
+```
+
+Ils couvrent la lecture des GPX, la déduction des pictogrammes de matériel, le filtrage anti-spam, les jetons signés, la liaison pseudo vers adresse, et le script qui intègre les sorties proposées. Ils n'ont besoin d'aucune variable d'environnement et n'écrivent rien dans le dépôt.
+
 Le site fonctionne **sans aucune variable d'environnement** : le stockage utilise des fichiers dans `.data/` et les emails s'affichent dans la console au lieu d'être envoyés. Tu peux donc tester le parcours complet, y compris les liens de confirmation, avant de brancher quoi que ce soit.
 
 ---
@@ -305,7 +313,17 @@ C'est ce formulaire qui figure dans les mentions légales plutôt qu'une adresse
 
 ### La confidentialité des adresses
 
-Une adresse email n'est **jamais** affichée, ni servie par une API publique, ni écrite dans `public/`. Seul le pseudo apparaît. Un test a vérifié qu'aucune adresse ne fuit sur l'accueil, les fiches de sortie, l'API des commentaires, les deux formulaires, les mentions légales ni la page d'administration.
+Une adresse email n'est **jamais** affichée, ni servie par une API publique, ni écrite dans `public/`. Seul le pseudo apparaît. Un test a vérifié qu'aucune adresse ne fuit sur l'accueil, les fiches de sortie, l'API des commentaires, les deux formulaires, les mentions légales ni la page d'administration. Un test automatique vérifie en plus qu'aucune adresse n'entre dans `public/rides/` au moment du build.
+
+Un pseudo ne peut pas être une adresse email : sans cette règle, il aurait suffi de soumettre une adresse comme pseudo pour savoir si elle avait déjà écrit ici.
+
+### Ce que le site demande à l'extérieur
+
+Les fontes sont téléchargées au moment du build et servies depuis le site, via `next/font` : afficher une page n'envoie l'adresse IP du visiteur à personne d'autre qu'à l'hébergeur.
+
+Le seul appel extérieur restant est celui des tuiles de carte, sur les fiches de sortie qui en affichent une. Il est assumé et décrit dans les mentions légales.
+
+Une politique de sécurité du contenu, déclarée dans `next.config.mjs`, refuse tout le reste : un script tiers qui se glisserait dans une page serait bloqué par le navigateur. S'ajoutent `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options` et `Permissions-Policy`.
 
 ### Le filtrage anti-spam
 
@@ -320,6 +338,8 @@ Sans service tiers ni captcha :
 | Tout en majuscules | les messages criés |
 | Limite de 5 envois par heure et par IP | les envois en rafale |
 | Confirmation par email | les adresses jetables ou fausses |
+
+Les compteurs d'envois sont purgés à chaque build, une fois leur heure écoulée : sans ça, chaque adresse de passage laissait un enregistrement définitif dans le stockage. À noter que cette limite freine les envois répétés sans les bloquer au coup près, faute de stockage transactionnel : deux requêtes vraiment simultanées peuvent passer ensemble.
 
 Le même filtrage protège les propositions, le formulaire de contact et la page de connexion admin. Les propositions passent en plus par une validation du GPX : un fichier vide ou illisible est refusé avant tout enregistrement.
 
@@ -412,11 +432,16 @@ lib/activities.js    activités, logements, difficultés, participants
 lib/gear.js          déduction du pictogramme de matériel, palette, normalisation
 lib/geo.js           pays et régions du formulaire
 lib/identity.js      liaison pseudo vers email
-lib/spam.js          filtrage anti-spam
+lib/spam.js          filtrage anti-spam, purge des compteurs
 lib/storage.js       Vercel Blob ou fichiers locaux
 lib/mailer.js        SMTP Gmail ou console
 lib/tokens.js        jetons signés de confirmation
 lib/admin.js         session d'administration
+lib/site.js          nom, description et adresse publique du site
+lib/fonts.js         fontes auto-hébergées
+lib/limits.js        plafonds de taille à l'envoi d'une proposition
+lib/contactSubjects.js  motifs du formulaire de contact
+lib/api.js           appels d'API côté navigateur, erreurs lisibles
 
 components/RouteMap.jsx          carte et sélecteur de fond
 components/ElevationProfile.jsx  profil d'altitude
@@ -433,7 +458,11 @@ pages/proposer.js          formulaire de proposition
 pages/contact.js           formulaire de contact
 pages/mentions-legales.js  mentions légales
 pages/admin/index.js       modération
+pages/sitemap.xml.js       plan du site, construit depuis les sorties
+pages/robots.txt.js        robots.txt, cite le plan du site
 pages/api/                 routes serveur
+
+tests/                     tests unitaires, lancés par npm test
 ```
 
 ---

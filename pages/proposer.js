@@ -3,10 +3,10 @@ import Head from "next/head";
 import Link from "next/link";
 import { ACTIVITIES, LODGINGS, DIFFICULTIES } from "@/lib/activities";
 import { COUNTRY_NAMES, regionsFor, OTHER } from "@/lib/geo";
+import { MAX_FILE_BYTES, MAX_PAYLOAD_BYTES_CLIENT, formatBytes } from "@/lib/limits";
+import { postJson } from "@/lib/api";
 import ThemeToggle from "@/components/ThemeToggle";
 import GearPicker from "@/components/GearPicker";
-
-const MAX_FILE_BYTES = 4 * 1024 * 1024;
 
 const emptyStage = () => ({
   title: "", description: "", lodgingType: "", lodgingText: "",
@@ -47,17 +47,12 @@ export default function Proposer() {
       return;
     }
     const timer = setTimeout(async () => {
-      try {
-        const res = await fetch("/api/identity/check", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pseudo: form.author, email: form.authorEmail }),
-        });
-        const data = await res.json();
-        setIdentity(data.ok ? null : data);
-      } catch {
-        setIdentity(null);
-      }
+      const { ok, data } = await postJson("/api/identity/check", {
+        pseudo: form.author,
+        email: form.authorEmail,
+      });
+      // En cas d'échec on n'affiche rien : la route d'envoi refera le contrôle.
+      setIdentity(ok && !data.ok ? data : null);
     }, 600);
     return () => clearTimeout(timer);
   }, [form.author, form.authorEmail]);
@@ -69,7 +64,10 @@ export default function Proposer() {
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
-      setState({ status: "error", message: `${file.name} dépasse 4 Mo.` });
+      setState({
+        status: "error",
+        message: `${file.name} dépasse ${formatBytes(MAX_FILE_BYTES)}. Réduis le nombre de points de la trace avant de la renvoyer.`,
+      });
       return;
     }
     setStage(i, "gpx", await file.text());
@@ -85,8 +83,6 @@ export default function Proposer() {
       setState({ status: "error", message: "Chaque étape a besoin de son fichier GPX." });
       return;
     }
-    setState({ status: "sending", message: null });
-
     const payload = {
       ...form,
       country: form.country === OTHER ? form.countryOther : form.country,
@@ -103,21 +99,27 @@ export default function Proposer() {
       renderedAt: renderedAt.current,
     };
 
-    try {
-      const res = await fetch("/api/submissions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+    // Le poids réel est celui du JSON envoyé, pas celui des fichiers choisis :
+    // on le mesure ici plutôt que de laisser la plateforme couper la requête
+    // sans explication une fois les traces déjà téléversées.
+    const weight = new Blob([JSON.stringify(payload)]).size;
+    if (weight > MAX_PAYLOAD_BYTES_CLIENT) {
+      setState({
+        status: "error",
+        message: `L'ensemble pèse ${formatBytes(weight)}, au delà des ${formatBytes(MAX_PAYLOAD_BYTES_CLIENT)} acceptés. Envoie moins d'étapes à la fois, ou simplifie les traces les plus lourdes.`,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setState({ status: "error", message: data.error || "Envoi impossible." });
-        return;
-      }
-      setState({ status: "sent", message: data.message });
-    } catch {
-      setState({ status: "error", message: "Envoi impossible, réessaie plus tard." });
+      return;
     }
+
+    setState({ status: "sending", message: null });
+
+    const { ok, data } = await postJson("/api/submissions", payload);
+    if (!ok) {
+      if (data.suggestion) setForm((f) => ({ ...f, author: data.suggestion }));
+      setState({ status: "error", message: data.error || "Envoi impossible." });
+      return;
+    }
+    setState({ status: "sent", message: data.message });
   };
 
   if (state.status === "sent") {

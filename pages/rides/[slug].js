@@ -3,7 +3,8 @@ import Head from "next/head";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { getRideSlugs, getRideDetail } from "@/lib/rides";
-import { getActivity, getLodging, formatPlace, gearEmoji } from "@/lib/activities";
+import { getActivity, getLodging, formatPlace, gearEmoji, truncate } from "@/lib/activities";
+import { SITE_NAME, siteUrl } from "@/lib/site";
 import ElevationProfile from "@/components/ElevationProfile";
 import Participants from "@/components/Participants";
 import Comments from "@/components/Comments";
@@ -19,7 +20,34 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  return { props: { ride: getRideDetail(params.slug) } };
+  const ride = getRideDetail(params.slug);
+  const activity = getActivity(ride.activity);
+  const place = formatPlace(ride.country, ride.region);
+
+  // Résumé destiné aux moteurs de recherche et aux aperçus de partage. Sans
+  // description saisie, on compose une phrase à partir des chiffres de la
+  // sortie : mieux vaut ça qu'un aperçu vide quand le lien circule.
+  const summary = ride.description
+    ? truncate(ride.description, 160).text
+    : [
+        `${activity.label} de ${ride.distanceKm} km`,
+        place ? `en ${place}` : null,
+        `avec ${ride.elevationGain} m de dénivelé positif`,
+        ride.stageCount > 1 ? `, en ${ride.stageCount} étapes` : "",
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .replace(" ,", ",") + ".";
+
+  return {
+    props: {
+      ride,
+      meta: {
+        summary,
+        url: `${siteUrl()}/rides/${ride.slug}`,
+      },
+    },
+  };
 }
 
 function Lodging({ lodging }) {
@@ -85,15 +113,30 @@ function Stage({ stage, index, defaultOpen }) {
   );
 }
 
-export default function RidePage({ ride }) {
+export default function RidePage({ ride, meta }) {
   const activity = getActivity(ride.activity);
   const place = formatPlace(ride.country, ride.region);
   const multi = ride.stageCount > 1;
+  const pageTitle = `${ride.title} · ${SITE_NAME}`;
 
   return (
     <>
       <Head>
-        <title>{ride.title} · Partage de balades familiales</title>
+        <title>{pageTitle}</title>
+        <meta name="description" content={meta.summary} />
+        <link rel="canonical" href={meta.url} />
+
+        {/* Aperçu affiché quand le lien est partagé dans une conversation ou
+            sur un réseau. Sans ces balises, il n'apparaissait rien du tout. */}
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:locale" content="fr_BE" />
+        <meta property="og:title" content={ride.title} />
+        <meta property="og:description" content={meta.summary} />
+        <meta property="og:url" content={meta.url} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={ride.title} />
+        <meta name="twitter:description" content={meta.summary} />
       </Head>
 
       <div className="container">

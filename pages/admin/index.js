@@ -276,19 +276,12 @@ function Messages() {
   const [items, setItems] = useState(null);
 
   const load = () =>
-    fetch("/api/admin/messages")
-      .then((r) => r.json())
-      .then((d) => setItems(d.messages || []))
-      .catch(() => setItems([]));
+    callApi("/api/admin/messages").then(({ data }) => setItems(data.messages || []));
 
   useEffect(() => { load(); }, []);
 
   const remove = async (messageId) => {
-    await fetch("/api/admin/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", messageId }),
-    });
+    await postJson("/api/admin/messages", { action: "delete", messageId });
     load();
   };
 

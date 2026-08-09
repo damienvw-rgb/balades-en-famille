@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { getRideSummaries } from "@/lib/rides";
+import { SITE_NAME, SITE_DESCRIPTION, siteUrl } from "@/lib/site";
 import Filters from "@/components/Filters";
 import RideCard from "@/components/RideCard";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -12,10 +13,10 @@ export async function getStaticProps() {
   const countries = [...new Set(rides.map((r) => r.country).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b, "fr")
   );
-  return { props: { rides, activities, countries } };
+  return { props: { rides, activities, countries, url: siteUrl() } };
 }
 
-export default function Home({ rides, activities, countries }) {
+export default function Home({ rides, activities, countries, url }) {
   const [activity, setActivity] = useState(null);
   const [country, setCountry] = useState(null);
 
@@ -32,11 +33,17 @@ export default function Home({ rides, activities, countries }) {
   return (
     <>
       <Head>
-        <title>Partage de balades familiales</title>
-        <meta
-          name="description"
-          content="Un carnet de route de balades parcourues à vélo, à pied ou par tout autre moyen, pour donner des idées à d'autres familles."
-        />
+        <title>{SITE_NAME}</title>
+        <meta name="description" content={SITE_DESCRIPTION} />
+        <link rel="canonical" href={url} />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:locale" content="fr_BE" />
+        <meta property="og:title" content={SITE_NAME} />
+        <meta property="og:description" content={SITE_DESCRIPTION} />
+        <meta property="og:url" content={url} />
+        <meta name="twitter:card" content="summary" />
       </Head>
 
       <div className="container">

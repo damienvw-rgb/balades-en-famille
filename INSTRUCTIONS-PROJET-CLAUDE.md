@@ -15,12 +15,16 @@ commenter.
 ## Contexte technique
 
 - Next.js 16 en Pages Router (pas App Router), React 19, JavaScript sans TypeScript
+- Le paquet est en modules ES ("type": "module"). Les imports relatifs portent
+  leur extension .js, sinon Node ne les résout pas hors du bundler Next.
 - Cartes : Leaflet et react-leaflet 5, fonds CyclOSM, OpenTopoMap et OSM, sans clé d'API
+- Fontes auto-hébergées par next/font, aucun appel à Google au chargement d'une page
 - Stockage : Vercel Blob en production, fichiers JSON dans .data/ en développement.
   La bascule est automatique dans lib/storage.js selon BLOB_READ_WRITE_TOKEN.
 - Emails : SMTP Gmail avec mot de passe d'application, repli console en développement.
   La bascule est dans lib/mailer.js selon SMTP_USER et SMTP_PASS.
 - CSS : un seul fichier styles/globals.css, variables CSS, thèmes clair et sombre
+- Tests : node:test, sans dépendance, lancés par npm test
 - Aucune dépendance payante, aucun compte tiers en dehors de Vercel et Gmail
 
 ## Architecture
@@ -44,6 +48,10 @@ Fichiers clés :
 - lib/storage.js      abstraction Blob ou fichiers locaux
 - lib/mailer.js       abstraction SMTP ou console
 - lib/tokens.js       jetons HMAC signés, sans stockage
+- lib/gear.js         pictogrammes du matériel, seul endroit qui les déduit
+- lib/site.js         nom, description et adresse publique du site
+- lib/limits.js       plafonds de taille à l'envoi d'une proposition
+- lib/api.js          appels d'API côté navigateur, erreurs toujours lisibles
 
 ## Règles à respecter
 
@@ -65,11 +73,17 @@ Fichiers clés :
    assumé, expliqué dans les mentions légales. Ne les change pas.
 8. Le thème clair est le défaut. Toute nouvelle couleur passe par une variable
    CSS définie pour les deux thèmes, jamais par une couleur en dur.
+9. Pas de code mort. Un fichier que plus personne n'importe est supprimé, pas
+   gardé de côté : il finit par contredire le code vivant et par m'induire en
+   erreur quand je te joins le projet.
+10. Toute requête vers un domaine extérieur doit être justifiée et décrite dans
+   les mentions légales. La politique de sécurité du contenu de next.config.mjs
+   bloque le reste.
 
 ## Ce que j'attends de toi
 
-- Lance le build avant de me livrer, et dis-moi ce que tu as vérifié et ce que
-  tu n'as pas pu vérifier
+- Lance le build **et** npm test avant de me livrer, et dis-moi ce que tu as
+  vérifié et ce que tu n'as pas pu vérifier
 - Livre un zip complet du projet plutôt que des extraits : je remplace le dossier
   entier à chaque fois
 - Commente le code en français, comme l'existant

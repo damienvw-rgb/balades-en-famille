@@ -2,14 +2,8 @@ import { useState, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
-
-const SUBJECTS = {
-  bug: "Signaler un problème sur le site",
-  amelioration: "Proposer une amélioration",
-  modification: "Modifier ou retirer un contenu que j'ai publié",
-  contenu: "Signaler un contenu inapproprié",
-  autre: "Autre",
-};
+import { CONTACT_SUBJECTS as SUBJECTS } from "@/lib/contactSubjects";
+import { postJson } from "@/lib/api";
 
 export default function Contact() {
   const renderedAt = useRef(Date.now());
@@ -23,21 +17,17 @@ export default function Contact() {
   const submit = async (e) => {
     e.preventDefault();
     setState({ status: "sending", message: null });
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, renderedAt: renderedAt.current }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setState({ status: "error", message: data.error || "Envoi impossible." });
-        return;
-      }
-      setState({ status: "sent", message: data.message });
-    } catch {
-      setState({ status: "error", message: "Envoi impossible, réessaie plus tard." });
+
+    const { ok, data } = await postJson("/api/contact", {
+      ...form,
+      renderedAt: renderedAt.current,
+    });
+
+    if (!ok) {
+      setState({ status: "error", message: data.error || "Envoi impossible." });
+      return;
     }
+    setState({ status: "sent", message: data.message });
   };
 
   return (

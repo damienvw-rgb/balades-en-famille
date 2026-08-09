@@ -22,9 +22,13 @@
   --accent-soft: rgba(179, 74, 38, 0.08);
   --warn: #a8391a;
 
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  /* --font-fraunces, --font-inter et --font-plex sont définies par next/font
+     depuis _app.js (voir lib/fonts.js). Le second argument de var() est
+     indispensable : sans lui, une variable absente rendrait toute la
+     déclaration invalide et on perdrait jusqu'aux familles de repli. */
+  --font-display: var(--font-fraunces, Georgia), Georgia, serif;
+  --font-body: var(--font-inter, system-ui), system-ui, sans-serif;
+  --font-mono: var(--font-plex, ui-monospace), ui-monospace, monospace;
 }
 
 :root[data-theme="dark"] {
