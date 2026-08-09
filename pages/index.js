@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { getRideSummaries } from "@/lib/rides";
+import { sortDifficulties } from "@/lib/activities";
 import Filters from "@/components/Filters";
 import RideCard from "@/components/RideCard";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -12,21 +13,28 @@ export async function getStaticProps() {
   const countries = [...new Set(rides.map((r) => r.country).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b, "fr")
   );
-  return { props: { rides, activities, countries } };
+  // Les difficultés gardent l'ordre du formulaire, du plus simple au plus
+  // engagé : classées par ordre alphabétique, la liste n'aurait aucun sens.
+  const difficulties = sortDifficulties(
+    new Set(rides.map((r) => r.difficulty).filter(Boolean))
+  );
+  return { props: { rides, activities, countries, difficulties } };
 }
 
-export default function Home({ rides, activities, countries }) {
+export default function Home({ rides, activities, countries, difficulties }) {
   const [activity, setActivity] = useState(null);
   const [country, setCountry] = useState(null);
+  const [difficulty, setDifficulty] = useState(null);
 
   const visible = useMemo(
     () =>
       rides.filter(
         (r) =>
           (activity === null || r.activity === activity) &&
-          (country === null || r.country === country)
+          (country === null || r.country === country) &&
+          (difficulty === null || r.difficulty === difficulty)
       ),
-    [rides, activity, country]
+    [rides, activity, country, difficulty]
   );
 
   return (
@@ -67,10 +75,13 @@ export default function Home({ rides, activities, countries }) {
             <Filters
               activities={activities}
               countries={countries}
+              difficulties={difficulties}
               activity={activity}
               country={country}
+              difficulty={difficulty}
               onActivityChange={setActivity}
               onCountryChange={setCountry}
+              onDifficultyChange={setDifficulty}
               resultCount={visible.length}
               totalCount={rides.length}
             />

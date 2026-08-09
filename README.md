@@ -189,7 +189,9 @@ Distance, dénivelé positif et négatif, profil d'altitude, totaux sur l'ensemb
 
 ### Filtres
 
-Deux listes déroulantes sur une ligne, activité et pays, cumulatives. Les options sont construites à partir des sorties publiées : tant qu'aucune sortie n'est en ski, l'option Ski n'apparaît pas. Un filtre à valeur unique ne s'affiche pas du tout. Le filtrage se fait dans le navigateur, sans rechargement.
+Trois listes déroulantes sur une ligne, activité, pays et difficulté, cumulatives. Les options sont construites à partir des sorties publiées : tant qu'aucune sortie n'est en ski, l'option Ski n'apparaît pas. Un filtre à valeur unique ne s'affiche pas du tout. Le filtrage se fait dans le navigateur, sans rechargement.
+
+Les difficultés sont listées du plus simple au plus engagé, dans l'ordre du formulaire, et non par ordre alphabétique. Une sortie sans difficulté renseignée n'apparaît dans aucune des options de ce filtre.
 
 ### Thème clair et sombre
 
@@ -447,7 +449,7 @@ lib/admin.js         session d'administration
 components/RouteMap.jsx          carte et sélecteur de fond
 components/ElevationProfile.jsx  profil d'altitude
 components/Comments.jsx          fil de discussion et formulaire
-components/Filters.jsx           filtres activité et pays
+components/Filters.jsx           filtres activité, pays et difficulté
 components/RideCard.jsx          carte d'une sortie sur l'accueil
 components/Participants.jsx      composition du groupe, infobulles au survol
 components/GearPicker.jsx        saisie du matériel et choix du pictogramme
