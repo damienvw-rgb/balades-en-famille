@@ -336,10 +336,12 @@ a { color: inherit; text-decoration: none; }
 
 .leaflet-container { height: 100%; width: 100%; background: var(--bg-raised); }
 
-/* Le fond est légèrement désaturé et éclairci : les itinéraires cyclables
-   magenta et les routes orange d'OpenStreetMap rivalisaient avec la trace.
-   Seul le calque des tuiles est touché, le tracé garde ses couleurs pleines. */
-.leaflet-tile-pane { filter: saturate(0.78) brightness(1.05); }
+/* Le fond est désaturé et éclairci : les itinéraires cyclables magenta, les
+   routes orange et les limites administratives violettes d'OpenStreetMap
+   rivalisaient avec la trace. Le fond garde ses formes et ses libellés, il
+   perd seulement de la force. Seul le calque des tuiles est touché, le tracé
+   garde ses couleurs pleines. */
+.leaflet-tile-pane { filter: saturate(0.5) brightness(1.07); }
 
 .download-row {
   display: flex; align-items: center; flex-wrap: wrap; gap: 14px;

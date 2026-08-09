@@ -39,14 +39,18 @@ const LAYERS = {
  * doublée d'un liseré plus large dessous, comme le font Komoot ou Strava.
  *
  * Le liseré est sombre et non blanc : tous les fonds proposés ici sont clairs,
- * un contour blanc n'y détacherait rien. Semi-transparent, il fonce ce qu'il
- * recouvre sans l'effacer, et la trace se lit alors comme un objet posé sur la
- * carte quelle que soit sa couleur, y compris le jaune et le vert clair.
+ * un contour blanc n'y détacherait rien. Il reste légèrement transparent, pour
+ * ne pas masquer la route suivie, et la trace se lit alors comme un objet posé
+ * sur la carte quelle que soit sa couleur, y compris le jaune et le vert clair.
+ *
+ * Une première version plus discrète (5 px, liseré à 0.45) ne suffisait pas sur
+ * les zones denses du Limbourg, où le fond aligne routes orange, itinéraires
+ * cyclables magenta et limites administratives violettes.
  */
-const TRACE_WEIGHT = 5;
-const CASING_WEIGHT = TRACE_WEIGHT + 4;
-const CASING_COLOR = "#1c2b36";
-const CASING_OPACITY = 0.45;
+const TRACE_WEIGHT = 6;
+const CASING_WEIGHT = TRACE_WEIGHT + 5;
+const CASING_COLOR = "#0d1b24";
+const CASING_OPACITY = 0.75;
 
 export default function RouteMap({ stages, activity = null, visibleStages = null }) {
   // Le fond de départ dépend de l'activité : relief en randonnée, cyclable à
@@ -141,7 +145,7 @@ export default function RouteMap({ stages, activity = null, visibleStages = null
                   clair ne se voyait pas. */}
               <CircleMarker
                 center={start}
-                radius={6}
+                radius={7}
                 pathOptions={{
                   color: stage.color,
                   fillColor: "#fff",
@@ -153,7 +157,7 @@ export default function RouteMap({ stages, activity = null, visibleStages = null
               {i === drawable.length - 1 && (
                 <CircleMarker
                   center={end}
-                  radius={7}
+                  radius={8}
                   pathOptions={{
                     color: CASING_COLOR,
                     fillColor: stage.color,
