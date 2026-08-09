@@ -15,7 +15,7 @@ commenter.
 ## Contexte technique
 
 - Next.js 16 en Pages Router (pas App Router), React 19, JavaScript sans TypeScript
-- Cartes : Leaflet et react-leaflet 5, fonds CyclOSM, OpenTopoMap et OSM, sans clé d'API
+- Cartes : Leaflet et react-leaflet 5, fonds OpenTopoMap et OSM, sans clé d'API
 - Stockage : Vercel Blob en production, fichiers JSON dans .data/ en développement.
   La bascule est automatique dans lib/storage.js selon BLOB_READ_WRITE_TOKEN.
 - Emails : SMTP Gmail avec mot de passe d'application, repli console en développement.

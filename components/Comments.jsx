@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import { stageLabel } from "@/lib/activities";
 
 function formatDate(iso) {
   try {
@@ -233,8 +234,13 @@ function CommentForm({ ride, stages, replyTo, onCancel, onSent }) {
           <span>À propos de</span>
           <select value={form.stage} onChange={set("stage")}>
             <option value="">La sortie dans son ensemble</option>
-            {stages.map((s) => (
-              <option key={s.file} value={s.title || s.file}>{s.title || s.file}</option>
+            {/* Le libellé porte le numéro d'étape, la valeur enregistrée reste
+                le titre : elle sert d'étiquette aux commentaires déjà publiés,
+                la renommer les désaccorderait des nouveaux. */}
+            {stages.map((s, i) => (
+              <option key={s.file} value={s.title || s.file}>
+                {stageLabel(s.title, i, stages.length)}
+              </option>
             ))}
           </select>
         </label>

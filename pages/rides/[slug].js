@@ -3,7 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { getRideSlugs, getRideDetail } from "@/lib/rides";
-import { getActivity, getLodging, formatPlace, gearEmoji } from "@/lib/activities";
+import { getActivity, getLodging, formatPlace, gearEmoji, stageLabel } from "@/lib/activities";
 import ElevationProfile from "@/components/ElevationProfile";
 import Participants from "@/components/Participants";
 import Comments from "@/components/Comments";
@@ -42,7 +42,7 @@ function Lodging({ lodging }) {
 }
 
 /** Une étape repliée par défaut : le titre sert de bouton d'ouverture. */
-function Stage({ stage, index, defaultOpen }) {
+function Stage({ stage, index, total, defaultOpen }) {
   const [open, setOpen] = useState(defaultOpen);
   const panelId = `etape-${index}`;
 
@@ -56,7 +56,7 @@ function Stage({ stage, index, defaultOpen }) {
         onClick={() => setOpen((v) => !v)}
       >
         <span className="stage-dot" style={{ background: stage.color }} aria-hidden="true" />
-        <span className="stage-toggle-title">{stage.title || `Étape ${index + 1}`}</span>
+        <span className="stage-toggle-title">{stageLabel(stage.title, index, total)}</span>
         <span className="stage-figures">
           {stage.distanceKm} km · +{stage.elevationGain} m
         </span>
@@ -178,7 +178,13 @@ export default function RidePage({ ride }) {
 
         <div className="stage-list">
           {ride.stages.map((stage, i) => (
-            <Stage key={stage.file} stage={stage} index={i} defaultOpen={!multi} />
+            <Stage
+              key={stage.file}
+              stage={stage}
+              index={i}
+              total={ride.stages.length}
+              defaultOpen={!multi}
+            />
           ))}
         </div>
 

@@ -88,6 +88,8 @@ Pour donner un vrai titre, une description et un logement à chaque étape, ajou
 
 Chaque étape reçoit sa couleur sur la carte, son profil d'altitude, son logement et son lien de téléchargement. Sur la fiche, les étapes sont **repliées par défaut** : le titre sert de bouton pour dérouler le détail.
 
+Dès qu'une sortie compte plusieurs étapes, **son numéro passe devant le titre** : « Étape 2 · Vers Maaseik », sur la fiche, dans l'infobulle de la carte et dans le choix d'étape du formulaire de commentaire. Sans lui, une liste de noms de lieux ne dit pas dans quel ordre on roule. Une étape sans titre affiche simplement « Étape 2 », et une sortie à trace unique n'est pas numérotée. Le calcul est dans `stageLabel()`, `lib/activities.js`.
+
 ---
 
 ## Les champs en détail
@@ -199,27 +201,27 @@ Toutes les couleurs passent par des variables CSS définies pour les deux thème
 
 ### Fonds de carte
 
-Trois fonds, tous libres et sans clé d'API, sélectionnables sur chaque carte :
+Deux fonds, libres et sans clé d'API, sélectionnables sur chaque carte :
 
 | Bouton | Fond | Pour quoi |
 | --- | --- | --- |
-| Cyclable | CyclOSM | le plus proche du rendu de Komoot : itinéraires cyclables mis en avant, relief discret |
 | Relief | OpenTopoMap | courbes de niveau marquées, utile en montagne |
-| Plan | OpenStreetMap | fond neutre, le plus lisible en ville |
+| Plan | OpenStreetMap | fond neutre, le plus lisible partout ailleurs |
 
-**Le fond affiché à l'arrivée dépend de l'activité**, parce qu'on ne regarde pas une randonnée en montagne comme une sortie à vélo :
+**CyclOSM a été retiré.** Son intérêt, la mise en avant des itinéraires cyclables, se retournait contre nous : sur les zones denses il couvrait la carte de lignes magenta et violettes qui rivalisaient avec la trace, précisément ce qu'on cherchait à éviter.
+
+**Le fond affiché à l'arrivée dépend de l'activité** : le relief aux activités à pied, où les courbes de niveau disent quelque chose, le plan à tout le reste.
 
 | Activité | Fond proposé d'office |
 | --- | --- |
-| Vélo, VTT, Gravel | Cyclable |
 | Randonnée, Marche, Raquettes, Ski | Relief |
-| Kayak, Cheval, Autre | Plan |
+| Vélo, VTT, Gravel, Kayak, Cheval, Autre | Plan |
 
-Les trois boutons restent affichés dans tous les cas : le visiteur change de fond quand il veut, ce choix ne fait que décider du premier affichage. La correspondance est dans `ACTIVITY_MAP_LAYER`, en tête de `lib/activities.js` : une ligne à changer si tu veux un autre fond pour une activité.
+Les deux boutons restent affichés dans tous les cas : le visiteur change de fond quand il veut, ce choix ne fait que décider du premier affichage. La correspondance est dans `ACTIVITY_MAP_LAYER`, en tête de `lib/activities.js` : une ligne à changer si tu veux un autre fond pour une activité.
 
 ### Lisibilité de la trace
 
-Les fonds OpenStreetMap sont chargés : itinéraires cyclables en magenta, routes en orange, bois en vert. Un simple trait de couleur s'y perdait, une étape jaune ou verte pouvant passer pour une route. Trois réglages y répondent, dans `components/RouteMap.jsx` et `styles/globals.css` :
+Les fonds OpenStreetMap sont chargés : routes en orange, limites administratives violettes, bois en vert. Un simple trait de couleur s'y perdait, une étape jaune ou verte pouvant passer pour une route. Trois réglages y répondent, dans `components/RouteMap.jsx` et `styles/globals.css` (le quatrième étant le retrait de CyclOSM, plus haut) :
 
 - chaque trace est **doublée d'un liseré sombre plus large dessous** (11 px), comme chez Komoot ou Strava. Sombre et non blanc : tous les fonds proposés ici sont clairs, un contour blanc n'y détacherait rien. Il reste un peu transparent pour ne pas masquer la route suivie
 - la trace elle-même passe de 4 à **6 pixels**, et les pastilles de départ et d'arrivée grossissent d'autant

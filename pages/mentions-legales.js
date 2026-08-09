@@ -157,9 +157,7 @@ export default function MentionsLegales() {
             responsable de sa préparation, de son équipement et de sa sécurité.
           </p>
           <p>
-            Les fonds de carte proviennent de{" "}
-            <a href="https://www.cyclosm.org" target="_blank" rel="noopener noreferrer">CyclOSM</a>{" "}
-            et d'
+            Les fonds de carte proviennent d'
             <a href="https://opentopomap.org" target="_blank" rel="noopener noreferrer">OpenTopoMap</a>{" "}
             (CC-BY-SA), à partir des données d'
             <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>{" "}

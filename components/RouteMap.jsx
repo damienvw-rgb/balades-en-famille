@@ -1,20 +1,15 @@
 import { Fragment, useState } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip } from "react-leaflet";
-import { mapLayerFor } from "@/lib/activities";
+import { mapLayerFor, stageLabel } from "@/lib/activities";
 
 /**
  * Fonds de carte disponibles, tous libres et sans clé d'API.
- * CyclOSM est le plus proche du rendu de Komoot : mêmes données OpenStreetMap,
- * mise en avant des itinéraires cyclables, relief discret.
+ *
+ * CyclOSM a été retiré : son intérêt, la mise en avant des itinéraires
+ * cyclables, se retournait contre nous. Sur les zones denses il couvrait la
+ * carte de lignes magenta et violettes qui rivalisaient avec la trace.
  */
 const LAYERS = {
-  cyclosm: {
-    label: "Cyclable",
-    url: "https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png",
-    attribution:
-      'Fond <a href="https://www.cyclosm.org">CyclOSM</a>, données &copy; OpenStreetMap',
-    maxZoom: 18,
-  },
   topo: {
     label: "Relief",
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
@@ -108,6 +103,9 @@ export default function RouteMap({ stages, activity = null, visibleStages = null
           const positions = stage.points.map((p) => [p.lat, p.lon]);
           const start = positions[0];
           const end = positions[positions.length - 1];
+          // Le numéro se lit dans la sortie entière, pas dans le sous-ensemble
+          // affiché : filtrer les étapes ne doit pas renuméroter celles qui restent.
+          const rank = stages.findIndex((s) => s.file === stage.file);
           return (
             <Fragment key={stage.file}>
               {/* Liseré, sous la trace. Non interactif : le survol doit
@@ -135,7 +133,7 @@ export default function RouteMap({ stages, activity = null, visibleStages = null
               >
                 {multi && (
                   <Tooltip sticky>
-                    {stage.title} · {stage.distanceKm} km
+                    {stageLabel(stage.title, rank, stages.length)} · {stage.distanceKm} km
                   </Tooltip>
                 )}
               </Polyline>
