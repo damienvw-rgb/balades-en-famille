@@ -38,12 +38,15 @@ const LAYERS = {
  * ne pas masquer la route suivie, et la trace se lit alors comme un objet posé
  * sur la carte quelle que soit sa couleur, y compris le jaune et le vert clair.
  *
- * Une première version plus discrète (5 px, liseré à 0.45) ne suffisait pas sur
- * les zones denses du Limbourg, où le fond aligne routes orange, itinéraires
- * cyclables magenta et limites administratives violettes.
+ * Le contraste vient de la couleur et de l'opacité du liseré, pas de sa largeur.
+ * Une version à 6 px doublée d'un liseré de 11 px écrasait la carte : sur une
+ * sortie longue vue de loin, la trace mangeait le fond au lieu de s'y poser.
+ * Les épaisseurs sont donc revenues à 5 et 9 px, le liseré gardant sa teinte
+ * sombre et son opacité, qui sont ce qui détache vraiment la trace des routes
+ * orange et des itinéraires cyclables magenta.
  */
-const TRACE_WEIGHT = 6;
-const CASING_WEIGHT = TRACE_WEIGHT + 5;
+const TRACE_WEIGHT = 5;
+const CASING_WEIGHT = TRACE_WEIGHT + 4;
 const CASING_COLOR = "#0d1b24";
 const CASING_OPACITY = 0.75;
 
@@ -143,7 +146,7 @@ export default function RouteMap({ stages, activity = null, visibleStages = null
                   clair ne se voyait pas. */}
               <CircleMarker
                 center={start}
-                radius={7}
+                radius={6}
                 pathOptions={{
                   color: stage.color,
                   fillColor: "#fff",
@@ -155,7 +158,7 @@ export default function RouteMap({ stages, activity = null, visibleStages = null
               {i === drawable.length - 1 && (
                 <CircleMarker
                   center={end}
-                  radius={8}
+                  radius={7}
                   pathOptions={{
                     color: CASING_COLOR,
                     fillColor: stage.color,

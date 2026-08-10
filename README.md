@@ -225,11 +225,11 @@ Les deux boutons restent affichés dans tous les cas : le visiteur change de fon
 
 Les fonds OpenStreetMap sont chargés : routes en orange, limites administratives violettes, bois en vert. Un simple trait de couleur s'y perdait, une étape jaune ou verte pouvant passer pour une route. Trois réglages y répondent, dans `components/RouteMap.jsx` et `styles/globals.css` (le quatrième étant le retrait de CyclOSM, plus haut) :
 
-- chaque trace est **doublée d'un liseré sombre plus large dessous** (11 px), comme chez Komoot ou Strava. Sombre et non blanc : tous les fonds proposés ici sont clairs, un contour blanc n'y détacherait rien. Il reste un peu transparent pour ne pas masquer la route suivie
-- la trace elle-même passe de 4 à **6 pixels**, et les pastilles de départ et d'arrivée grossissent d'autant
+- chaque trace est **doublée d'un liseré sombre plus large dessous** (9 px), comme chez Komoot ou Strava. Sombre et non blanc : tous les fonds proposés ici sont clairs, un contour blanc n'y détacherait rien. Il reste un peu transparent pour ne pas masquer la route suivie
+- la trace elle-même passe de 4 à **5 pixels**, et les pastilles de départ et d'arrivée grossissent d'autant
 - le calque des tuiles est **désaturé de moitié et éclairci** (`.leaflet-tile-pane`), ce qui recule le fond sans toucher aux couleurs des étapes : il garde ses formes et ses libellés, il perd seulement de la force
 
-Les épaisseurs et la couleur du liseré sont trois constantes en tête de `RouteMap.jsx`.
+Les épaisseurs et la couleur du liseré sont trois constantes en tête de `RouteMap.jsx`. Un essai à 6 et 11 px a été abandonné : la trace écrasait la carte sur les sorties longues, alors que le contraste vient de la teinte et de l'opacité du liseré, pas de sa largeur.
 
 ### Téléchargement des traces
 
