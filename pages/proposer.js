@@ -7,6 +7,16 @@ import ThemeToggle from "@/components/ThemeToggle";
 import GearPicker from "@/components/GearPicker";
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
+const MAX_STAGES = 30;
+// Vercel plafonne le corps d'une requête à 4,5 Mo. Avec trente étapes possibles,
+// le total des traces peut désormais y arriver : mieux vaut le dire ici, en
+// clair, qu'un envoi qui échoue sans explication une fois la page remplie.
+const MAX_TOTAL_GPX_BYTES = 4 * 1024 * 1024;
+
+/** Poids réel des traces une fois encodées, en octets. */
+function totalGpxBytes(stages) {
+  return stages.reduce((sum, s) => sum + new Blob([s.gpx || ""]).size, 0);
+}
 
 const emptyStage = () => ({
   title: "", description: "", lodgingType: "", lodgingText: "",
@@ -85,6 +95,14 @@ export default function Proposer() {
     e.preventDefault();
     if (stages.some((s) => !s.gpx)) {
       setState({ status: "error", message: "Chaque étape a besoin de son fichier GPX." });
+      return;
+    }
+    if (totalGpxBytes(stages) > MAX_TOTAL_GPX_BYTES) {
+      setState({
+        status: "error",
+        message:
+          "Le total des traces dépasse 4 Mo, l'envoi serait refusé. Allège les fichiers les plus lourds, ou coupe l'itinéraire en deux sorties.",
+      });
       return;
     }
     setState({ status: "sending", message: null });
@@ -241,7 +259,7 @@ export default function Proposer() {
             <label className="field">
               <span>Description</span>
               <textarea value={form.description} onChange={set("description")}
-                rows={4} maxLength={3000}
+                rows={10} maxLength={6000}
                 placeholder="Ce qui rend cette sortie intéressante, les points d'attention…" />
             </label>
           </fieldset>
@@ -324,11 +342,17 @@ export default function Proposer() {
                   <input type="text" value={stage.title} maxLength={120}
                     onChange={(e) => setStage(i, "title", e.target.value)}
                     placeholder={multi ? `Jour ${i + 1} : ...` : "Facultatif"} />
+                  {multi && (
+                    <small className="field-hint">
+                      Si tu écris toi-même « Jour {i + 1} » ou « Étape {i + 1} »,
+                      le numéro n'est pas ajouté une deuxième fois.
+                    </small>
+                  )}
                 </label>
 
                 <label className="field">
                   <span>Description de l'étape</span>
-                  <textarea value={stage.description} rows={2} maxLength={2000}
+                  <textarea value={stage.description} rows={7} maxLength={4000}
                     onChange={(e) => setStage(i, "description", e.target.value)} />
                 </label>
 
@@ -353,7 +377,7 @@ export default function Proposer() {
               </div>
             ))}
 
-            {stages.length < 12 && (
+            {stages.length < MAX_STAGES && (
               <button type="button" className="button-secondary"
                 onClick={() => setStages((l) => [...l, emptyStage()])}>
                 + Ajouter une étape

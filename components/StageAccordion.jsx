@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getLodging } from "@/lib/activities";
+import { getLodging, stageLabel } from "@/lib/activities";
 import ElevationProfile from "@/components/ElevationProfile";
 
 function Lodging({ lodging }) {
@@ -68,7 +68,7 @@ export default function StageAccordion({ stages, onHover }) {
                 onBlur={() => onHover?.(null)}
               >
                 <span className="stage-dot" style={{ background: stage.color }} aria-hidden="true" />
-                <span className="stage-trigger-title">{stage.title || `Étape ${i + 1}`}</span>
+                <span className="stage-trigger-title">{stageLabel(stage.title, i, stages.length)}</span>
                 <span className="stage-trigger-figures">
                   {stage.distanceKm} km · +{stage.elevationGain} m
                 </span>

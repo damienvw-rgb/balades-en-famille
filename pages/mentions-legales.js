@@ -28,14 +28,24 @@ export default function MentionsLegales() {
         <article className="legal">
           <h2>Éditeur</h2>
           <p>
-            Ce site est un carnet de balades personnel, sans but commercial, édité
-            par {EDITOR}. Pour toute question, remarque ou demande, écris via le{" "}
+            Ce site est un carnet de balades, sans but commercial, édité par{" "}
+            {EDITOR}. Pour toute question ou demande, écris via le{" "}
             <Link href="/contact">formulaire de contact</Link>.
           </p>
 
-          <h2>Données personnelles</h2>
+          <h2>Itinéraires : chacun le sien</h2>
+          <p>
+            Les traces publiées ici sont des idées de balades, rien de plus. Je
+            ne peux être tenu responsable d'aucune décision prise à partir d'un
+            itinéraire trouvé sur ce site. Chacun construit et assume le sien :
+            avant de partir, vérifie que le parcours est toujours praticable,
+            ouvert, sûr et adapté à ton groupe. Un chemin peut avoir été fermé,
+            un pont coupé, une route rendue dangereuse, un passage devenu privé,
+            et la météo change tout. La préparation, l'équipement et la sécurité
+            restent la responsabilité de qui prend la route.
+          </p>
 
-          <h3>Ce qui est collecté, et pourquoi</h3>
+          <h2>Données personnelles</h2>
           <p>
             Rien n'est collecté tant que tu ne remplis pas un formulaire. Aucune
             inscription, aucun profil, aucun traçage publicitaire, aucune revente
@@ -59,10 +69,9 @@ export default function MentionsLegales() {
               <tr>
                 <td data-label="Donnée">Adresse email</td>
                 <td data-label="Pourquoi">
-                  Confirmer que la demande vient de toi, te prévenir des réponses à
-                  tes messages et des commentaires reçus sur une sortie que tu as
-                  proposée, t'envoyer le lien qui te permet de corriger cette
-                  sortie, et te répondre si tu écris via le formulaire de contact
+                  Confirmer que la demande vient de toi, te prévenir des réponses
+                  et des commentaires reçus, t'envoyer le lien qui te permet de
+                  corriger ta sortie, et te répondre
                 </td>
                 <td data-label="Visible publiquement">Non, jamais</td>
               </tr>
@@ -74,96 +83,67 @@ export default function MentionsLegales() {
               <tr>
                 <td data-label="Donnée">Adresse IP</td>
                 <td data-label="Pourquoi">
-                  Limiter les envois automatisés. Elle n'est pas conservée en clair
-                  mais sous forme d'empreinte non réversible
+                  Limiter les envois automatisés. Conservée sous forme d'empreinte
+                  non réversible, effacée après une heure
                 </td>
                 <td data-label="Visible publiquement">Non</td>
               </tr>
             </tbody>
           </table>
 
-          <h3>Pourquoi ton adresse est conservée</h3>
           <p>
-            Les commentaires fonctionnent en fil de discussion : quand quelqu'un
-            répond à ton message, tu reçois un email pour que la conversation
-            puisse continuer. Cela suppose de conserver ton adresse aussi longtemps
-            que ton message reste en ligne. Elle n'apparaît nulle part sur le site,
-            n'est transmise à personne et ne sert à aucun envoi commercial. Si tu
-            ne veux plus recevoir ces notifications, demande le retrait de ton
-            message via le <Link href="/contact">formulaire de contact</Link>.
+            Ton adresse est conservée aussi longtemps que ton message reste en
+            ligne, pour que tu sois prévenu des réponses. Elle n'apparaît nulle
+            part sur le site, n'est transmise à personne et ne sert à aucun envoi
+            commercial.
           </p>
 
           <h3>Pseudo et adresse email vont de pair</h3>
           <p>
-            Une fois ton adresse confirmée, ton pseudo lui est rattaché. Personne
-            d'autre ne peut alors écrire sous ce pseudo, et tu restes reconnaissable
-            d'un message à l'autre. C'est aussi la raison pour laquelle le
-            formulaire te signale, le cas échéant, qu'un autre pseudo est déjà
-            associé à ton adresse.
-          </p>
-          <p>
-            Tu peux en changer quand tu veux : indique simplement un nouveau pseudo
-            en écrivant un commentaire ou en proposant une sortie, avec la même
-            adresse email. Le changement t'est annoncé dans l'email de confirmation
-            et ne prend effet qu'après ton clic sur le lien. Ton nouveau pseudo
-            remplace alors l'ancien partout où tu as publié, y compris sur tes
-            messages et tes sorties déjà en ligne. Ton ancien pseudo reste réservé
-            à ton adresse : personne d'autre ne peut le reprendre.
+            Une fois ton adresse confirmée, ton pseudo lui est rattaché : personne
+            d'autre ne peut écrire sous ce pseudo. Tu peux en changer quand tu
+            veux, en indiquant un nouveau pseudo avec la même adresse. Le
+            changement ne prend effet qu'après ton clic sur le lien reçu, puis
+            remplace l'ancien partout où tu as publié.
           </p>
 
-          <h3>Base légale et durée de conservation</h3>
+          <h3>Base légale, conservation et droits</h3>
           <p>
             Le traitement repose sur ton consentement, donné en remplissant le
-            formulaire puis confirmé en cliquant sur le lien reçu par email. Les
-            données liées à un contenu publié sont conservées tant que ce contenu
-            reste en ligne. Une proposition non confirmée ou refusée est supprimée.
-            Les empreintes d'adresses IP sont effacées après une heure.
-          </p>
-
-          <h3>Tes droits</h3>
-          <p>
-            Tu peux à tout moment demander l'accès à tes données, leur rectification
-            ou leur suppression, ainsi que le retrait d'un commentaire ou d'une
-            sortie que tu as publiée. Utilise le{" "}
-            <Link href="/contact">formulaire de contact</Link> en choisissant le
-            motif correspondant, la demande sera traitée dans les meilleurs délais.
-            Tu peux également introduire une réclamation auprès de l'Autorité de
-            protection des données (
+            formulaire puis confirmé par email. Les données liées à un contenu
+            publié sont conservées tant que ce contenu reste en ligne ; une
+            proposition non confirmée ou refusée est supprimée. Tu peux à tout
+            moment demander l'accès à tes données, leur rectification ou leur
+            suppression via le <Link href="/contact">formulaire de contact</Link>,
+            ainsi qu'introduire une réclamation auprès de l'Autorité de protection
+            des données (
             <a href="https://www.autoriteprotectiondonnees.be" target="_blank" rel="noopener noreferrer">
               autoriteprotectiondonnees.be
             </a>
             ).
           </p>
 
-          <h3>Cookies et mesure d'audience</h3>
+          <h3>Cookies</h3>
           <p>
-            Aucun cookie publicitaire, aucune mesure d'audience, aucun traceur tiers.
-            Le choix du thème clair ou sombre est enregistré dans le stockage local
-            de ton navigateur, pas dans un cookie : rien n'est transmis au serveur,
-            et tu peux l'effacer en vidant les données du site. Un unique cookie
-            technique existe, créé seulement lors d'une connexion à l'espace
-            d'administration : il ne concerne donc pas les visiteurs.
+            Aucun cookie publicitaire, aucune mesure d'audience, aucun traceur
+            tiers. Le choix du thème clair ou sombre est enregistré dans le
+            stockage local de ton navigateur. Un unique cookie technique existe,
+            créé seulement lors d'une connexion à l'espace d'administration.
           </p>
 
-          <h2>Un mot sur les pictogrammes</h2>
+          <h2>Contenus, droits et pictogrammes</h2>
+          <p>
+            En proposant une sortie ou un commentaire, tu confirmes en être
+            l'auteur et autorises sa publication. Tu en restes propriétaire et
+            peux en demander le retrait à tout moment, comme tu peux signaler un
+            contenu qui ne devrait pas être là, via le{" "}
+            <Link href="/contact">formulaire de contact</Link>.
+          </p>
           <p>
             Les participants sont représentés par des silhouettes, 👩 👨 pour les
-            adultes et 👧 👦 pour les enfants. La version masculine ou féminine
-            est tirée au hasard pour chaque sortie, sans rapport avec les
-            personnes réellement parties : ni le genre ni le prénom de qui que ce
-            soit n'est demandé, seul le nombre d'adultes et d'enfants l'est. Le
-            tirage évite d'imposer une représentation par défaut, et ne fait
-            de jaloux dans aucun sens.
-          </p>
-
-          <h2>Contenus et droits</h2>
-          <p>
-            En proposant une sortie ou un commentaire, tu confirmes en être l'auteur
-            et autorises sa publication sur ce site. Tu en restes propriétaire et
-            peux en demander le retrait à tout moment. Les traces GPX sont mises à
-            disposition à titre informatif : un itinéraire peut avoir changé, être
-            devenu impraticable ou traverser une propriété privée. Chacun reste
-            responsable de sa préparation, de son équipement et de sa sécurité.
+            adultes et 👧 👦 pour les enfants, tirées au hasard pour chaque
+            sortie : ni le genre ni le prénom de qui que ce soit n'est demandé,
+            seul le nombre l'est.
           </p>
           <p>
             Les fonds de carte proviennent d'
@@ -173,18 +153,11 @@ export default function MentionsLegales() {
             (ODbL).
           </p>
 
-          <h2>Signaler un contenu</h2>
-          <p>
-            Un commentaire déplacé, une trace erronée, un contenu qui ne devrait pas
-            être là ? Signale-le via le{" "}
-            <Link href="/contact">formulaire de contact</Link>, il sera examiné
-            rapidement.
-          </p>
-
           {/* Mention d'hébergeur obligatoire (art. III.74 du Code de droit
               économique belge, art. 6 LCEN en France), réduite à l'essentiel. */}
           <p className="legal-updated">
-            Hébergé par Vercel Inc., Covina, CA, États-Unis.
+            Hébergé par Vercel Inc., Covina, CA, États-Unis. Mais on travaille
+            pour l'héberger en Europe ! ;-)
             <br />
             Dernière mise à jour : août 2026.
           </p>

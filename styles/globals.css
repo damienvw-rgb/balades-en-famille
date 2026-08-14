@@ -288,8 +288,12 @@ a { color: inherit; text-decoration: none; }
   margin: 8px 0 14px;
 }
 
+/* pre-line et non pre-wrap : les retours à la ligne saisis dans le formulaire
+   sont rendus, les espaces multiples restent repliés. Une description longue
+   se lit en paragraphes au lieu d'un seul pavé. */
 .ride-detail-header .description {
   color: var(--ink-dim); max-width: 64ch; line-height: 1.6; margin: 0 0 10px;
+  white-space: pre-line;
 }
 
 .ride-author {
@@ -421,6 +425,7 @@ a { color: inherit; text-decoration: none; }
 .stage-description {
   color: var(--ink-dim); line-height: 1.6; max-width: 64ch;
   margin: 0 0 14px; font-size: 0.94rem;
+  white-space: pre-line;
 }
 
 /* Le bloc portait un emoji et un type, sans jamais dire de quoi il s'agissait.

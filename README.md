@@ -90,6 +90,12 @@ Chaque étape reçoit sa couleur sur la carte, son profil d'altitude, son logeme
 
 Dès qu'une sortie compte plusieurs étapes, **son numéro passe devant le titre** : « Étape 2 · Vers Maaseik », sur la fiche, dans l'infobulle de la carte et dans le choix d'étape du formulaire de commentaire. Sans lui, une liste de noms de lieux ne dit pas dans quel ordre on roule. Une étape sans titre affiche simplement « Étape 2 », et une sortie à trace unique n'est pas numérotée. Le calcul est dans `stageLabel()`, `lib/activities.js`.
 
+**Sauf si le titre porte déjà son propre numéro.** « Jour 2 : vers Maaseik », « Étape 3 », « J3 », « 3e jour » ou « Jours 4 et 5 » sont repris tels quels, sans donner « Étape 2 · Jour 2 ». La reconnaissance est dans `isSelfNumbered()`, `lib/activities.js` : elle accepte jour, étape, day, stage et l'abréviation J, avant ou après le nombre. Un titre qui commence par un nombre suivi d'un pluriel, comme « 2 jours en Ardenne », reste un titre et se voit bien numéroté.
+
+Une sortie peut compter jusqu'à **30 étapes** (`MAX_STAGES`, `lib/submissionInput.js`, repris dans les deux formulaires). La palette de `STAGE_COLORS` compte douze teintes pour que deux étapes voisines gardent des couleurs distinctes sur la carte ; au-delà, elle recommence.
+
+Le plafond réel n'est pas le nombre d'étapes mais le poids : Vercel refuse un corps de requête au-delà de 4,5 Mo. Les deux formulaires additionnent donc les traces avant l'envoi et arrêtent à 4 Mo (`MAX_TOTAL_GPX_BYTES`), avec un message qui dit quoi faire, plutôt qu'un échec sans explication une fois la page remplie. Sur la page de modification, seules les traces effectivement remplacées comptent.
+
 ---
 
 ## Les champs en détail

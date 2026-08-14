@@ -6,7 +6,7 @@ import { gearEmoji } from "@/lib/gear";
 import { postJson } from "@/lib/api";
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
-const MAX_STAGES = 12;
+const MAX_STAGES = 30;
 
 const emptyStage = () => ({
   title: "", description: "", difficulty: "",
@@ -193,7 +193,7 @@ export default function SubmitForm() {
 
         <label className="field">
           <span>Description</span>
-          <textarea value={form.description} onChange={set("description")} rows={4} maxLength={3000}
+          <textarea value={form.description} onChange={set("description")} rows={10} maxLength={6000}
             placeholder="Ce qui rend cette sortie intéressante, les points d'attention, les bons coins pour la pause…" />
           <small className="field-hint">
             Les premières lignes apparaissent sur la page d'accueil, le texte
@@ -297,7 +297,7 @@ export default function SubmitForm() {
 
             <label className="field">
               <span>Description</span>
-              <textarea value={stage.description} rows={2} maxLength={2000}
+              <textarea value={stage.description} rows={7} maxLength={4000}
                 onChange={(e) => setStage(i, "description", e.target.value)} />
             </label>
 
