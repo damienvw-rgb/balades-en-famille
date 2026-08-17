@@ -40,31 +40,52 @@ export default function Home({ rides, activities, countries, difficulties }) {
   return (
     <>
       <Head>
-        <title>Partage de balades familiales</title>
+        <title>Famille en vadrouille</title>
         <meta
           name="description"
-          content="Un carnet de route de balades parcourues à vélo, à pied ou par tout autre moyen, pour donner des idées à d'autres familles."
+          content="Le slow travel en famille. Des idées de balades, de voyages et d'aventures pour explorer ensemble, à votre rythme."
         />
       </Head>
 
-      <div className="container">
-        {/* En-tête compact : le contenu doit venir vite.
-            Le bouton « Proposer une sortie » vit dans le pied de page, il
-            n'est pas repris ici : sur téléphone il poussait le titre vers le
-            bas et laissait une bande vide en haut de l'écran. */}
-        <header className="site-header compact">
-          <div className="header-main">
-            <h1>Partage de balades familiales</h1>
-            <p>
-              Un carnet de route de vos balades parcourues à vélo, à pied ou par
-              tout autre moyen afin de donner des idées à d'autres familles.
-            </p>
-          </div>
-          <div className="header-actions">
-            <ThemeToggle />
-          </div>
-        </header>
+      {/* Bandeau d'accueil.
+          La photo est posée en fond CSS et non dans une balise img : si
+          public/banniere.jpg est absent, on retombe silencieusement sur le
+          dégradé de repli au lieu d'afficher une image cassée. Le voile sombre
+          par dessus garantit le contraste du texte blanc quelle que soit la
+          zone de la photo qui se retrouve derrière. */}
+      <header className="hero">
+        <div className="hero-media" aria-hidden="true" />
+        <div className="hero-veil" aria-hidden="true" />
 
+        <div className="hero-tools">
+          <ThemeToggle />
+        </div>
+
+        <div className="hero-inner">
+          <h1 className="hero-title">Famille en vadrouille</h1>
+          <p className="hero-tagline">Le slow travel en famille.</p>
+          {/* Deux blocs plutôt qu'un <br /> : sur téléphone les lignes
+              repassent en flux normal et se recollent avec une espace, ce
+              qu'un saut de ligne masqué ne sait pas faire. */}
+          <p className="hero-lede">
+            <span>Des idées de balades, de voyages et d'aventures</span>{" "}
+            <span>pour explorer ensemble, à votre rythme.</span>
+          </p>
+          <div className="hero-actions">
+            <a href="#vadrouilles" className="hero-cta solid">
+              Découvrir les vadrouilles
+            </a>
+            <Link href="/proposer" className="hero-cta ghost">
+              Partager la nôtre
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* La cible du bouton « Découvrir les vadrouilles ». L'ancre est posée
+          sur la section entière, pas sur les filtres, pour qu'elle existe
+          aussi quand aucune sortie n'est encore publiée. */}
+      <div className="container" id="vadrouilles">
         {rides.length === 0 ? (
           <p className="empty-state">
             Aucune sortie pour le moment. Ajoute un dossier dans /public/rides/

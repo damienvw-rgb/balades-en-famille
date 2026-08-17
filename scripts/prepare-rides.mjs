@@ -185,7 +185,7 @@ async function buildMergedTracks() {
     const name = slug.replace(/-/g, " ");
     const gpx = [
       '<?xml version="1.0" encoding="UTF-8"?>',
-      '<gpx version="1.1" creator="Partage de balades familiales" xmlns="http://www.topografix.com/GPX/1/1">',
+      '<gpx version="1.1" creator="Famille en vadrouille" xmlns="http://www.topografix.com/GPX/1/1">',
       "  <metadata>",
       `    <name>${name}</name>`,
       "  </metadata>",
@@ -248,7 +248,7 @@ async function buildMergedGpx(dir, slug) {
 
   const gpx = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<gpx version="1.1" creator="Partage de balades familiales" xmlns="http://www.topografix.com/GPX/1/1">',
+    '<gpx version="1.1" creator="Famille en vadrouille" xmlns="http://www.topografix.com/GPX/1/1">',
     "  <metadata>",
     `    <name>${escapeXml(info.title || slug)}</name>`,
     "  </metadata>",

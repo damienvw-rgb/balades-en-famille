@@ -1,9 +1,10 @@
-# Partage de balades familiales
+# Famille en vadrouille
 
-Un carnet de route de balades parcourues à vélo, à pied ou par tout autre moyen : carte interactive, profil d'altitude, distance, dénivelé, traces GPX à télécharger. Les visiteurs peuvent proposer leurs propres sorties et commenter. Construit avec Next.js 16, prêt à déployer sur Vercel.
+Le slow travel en famille. Des idées de balades, de voyages et d'aventures pour explorer ensemble, à votre rythme : carte interactive, profil d'altitude, distance, dénivelé, traces GPX à télécharger. Les visiteurs peuvent proposer leurs propres sorties et commenter. Construit avec Next.js 16, prêt à déployer sur Vercel.
 
 ## Sommaire
 
+- [Le bandeau d'accueil](#le-bandeau-daccueil)
 - [Ajouter une sortie](#ajouter-une-sortie)
 - [Les champs en détail](#les-champs-en-détail)
 - [Filtres, thème et cartes](#filtres-thème-et-cartes)
@@ -12,6 +13,25 @@ Un carnet de route de balades parcourues à vélo, à pied ou par tout autre moy
 - [Configuration](#configuration)
 - [Mise en ligne sur Vercel](#mise-en-ligne-sur-vercel)
 - [Structure du projet](#structure-du-projet)
+
+---
+
+## Le bandeau d'accueil
+
+La page d'accueil s'ouvre sur un bandeau plein écran : le titre du site, la
+signature « Le slow travel en famille. », le texte d'introduction et deux appels
+à l'action, « Découvrir les vadrouilles » qui descend vers la liste des sorties
+et « Partager la nôtre » qui mène au formulaire de proposition.
+
+La photo de fond est le fichier `public/banniere.jpg`. Elle est posée en fond
+CSS et non dans une balise `img` : tant que ce fichier n'existe pas, le bandeau
+retombe sur un dégradé aux couleurs du site au lieu d'afficher une image cassée.
+
+Pour changer la photo, remplace simplement `public/banniere.jpg`. Une image
+large et en paysage convient le mieux, autour de 2000 pixels de large et moins
+de 400 ko. Le cadrage vertical se règle avec `background-position` sur la règle
+`.hero-media` dans `styles/globals.css`, et l'intensité du voile sombre qui
+garantit la lisibilité du texte avec les variables `--hero-veil-*`.
 
 ---
 
@@ -446,6 +466,7 @@ Si un email n'arrive pas, regarde les indésirables, puis Vercel → **Logs**.
 ## Structure du projet
 
 ```
+public/banniere.jpg                la photo du bandeau d'accueil
 public/rides/<slug>/*.gpx          les traces GPS
 public/rides/<slug>/info.json      titre, activité, lieu, étapes, matériel
 scripts/prepare-rides.mjs          intègre les sorties approuvées, fusionne les GPX

@@ -7,7 +7,7 @@ Deux choses à faire : coller les instructions ci-dessous dans les **instruction
 ## 1. À coller dans les instructions du projet
 
 ```
-Tu m'aides à faire évoluer « Partage de balades familiales », un site Next.js
+Tu m'aides à faire évoluer « Famille en vadrouille », un site Next.js
 déployé sur Vercel qui répertorie des balades à vélo et randonnées, avec cartes,
 profils d'altitude et traces GPX. Des visiteurs peuvent proposer des sorties et
 commenter.

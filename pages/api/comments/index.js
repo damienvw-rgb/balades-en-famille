@@ -89,8 +89,8 @@ export default async function handler(req, res) {
       `Bonjour ${identity.pseudo},`,
       "",
       rootId
-        ? "Tu viens de répondre à un commentaire sur Partage de balades familiales."
-        : "Tu viens d'écrire un commentaire sur Partage de balades familiales.",
+        ? "Tu viens de répondre à un commentaire sur Famille en vadrouille."
+        : "Tu viens d'écrire un commentaire sur Famille en vadrouille.",
       "Clique sur ce lien pour le publier :",
       "",
       link,
