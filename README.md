@@ -403,6 +403,7 @@ Tout se règle dans Vercel, **Settings → Environment Variables**. Aucun compte
 | `ADMIN_EMAIL` | adresse qui reçoit les notifications |
 | `SMTP_USER` | ton adresse Gmail |
 | `SMTP_PASS` | mot de passe d'application Gmail, **pas** ton mot de passe habituel |
+| `SMTP_FROM` | adresse affichée comme expéditeur, si elle diffère de `SMTP_USER` |
 | `VERCEL_DEPLOY_HOOK_URL` | met en ligne une sortie approuvée sans intervention |
 | `NEXT_PUBLIC_LEGAL_NAME` | nom affiché dans les mentions légales, un prénom suffit |
 | `BLOB_READ_WRITE_TOKEN` | injecté automatiquement à la création du store Blob |
@@ -410,6 +411,17 @@ Tout se règle dans Vercel, **Settings → Environment Variables**. Aucun compte
 ### Le mot de passe d'application Gmail
 
 Sur ton compte Google : active la validation en deux étapes, puis Sécurité → Mots de passe des applications, et génère-en un. Il ne donne accès qu'à l'envoi SMTP, pas à ta boîte, et se révoque à tout moment. Limite de Gmail : environ 500 envois par jour, très au-dessus des besoins.
+
+### Changer l'adresse du site
+
+Aucune adresse n'est écrite dans le code : tout passe par les variables ci-dessus, et le dépôt est public. Pour basculer sur une autre adresse, change `ADMIN_EMAIL` dans Vercel, puis redéploie — les variables ne sont lues qu'au démarrage d'un déploiement.
+
+Pour que les emails **partent** aussi de cette adresse, deux chemins :
+
+- l'adresse est un alias de ton compte Gmail : garde `SMTP_USER` et `SMTP_PASS` tels quels, déclare l'alias dans Gmail (Paramètres → Comptes → « Envoyer des emails en tant que ») et renseigne `SMTP_FROM` ;
+- l'adresse est une vraie boîte (Google Workspace par exemple) : mets-la dans `SMTP_USER` et génère un nouveau mot de passe d'application depuis **ce** compte pour `SMTP_PASS`.
+
+Une adresse mise dans `SMTP_FROM` sans être déclarée dans Gmail est réécrite par le serveur, ou l'envoi est refusé.
 
 ---
 
