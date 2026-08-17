@@ -101,7 +101,7 @@ function AskLink({ intro }) {
     return (
       <>
         <p className="form-notice">{state.message}</p>
-        <Link href="/" className="button-primary">Revenir au carnet</Link>
+        <Link href="/#vadrouilles" className="button-primary">Revenir au carnet</Link>
       </>
     );
   }
@@ -256,7 +256,7 @@ export default function ModifierSortie() {
   const enTete = (titre) => (
     <div className="container narrow">
       <div className="page-top">
-        <Link href="/" className="back-link">← Retour au carnet</Link>
+        <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
         <ThemeToggle />
       </div>
       <header className="site-header compact">
@@ -282,7 +282,7 @@ export default function ModifierSortie() {
         <Head><title>Modifier ta sortie</title><meta name="robots" content="noindex" /></Head>
         <div className="container narrow">
           <div className="page-top">
-            <Link href="/" className="back-link">← Retour au carnet</Link>
+            <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
             <ThemeToggle />
           </div>
           <header className="site-header compact">
@@ -300,7 +300,7 @@ export default function ModifierSortie() {
               }
             />
           ) : (
-            <Link href="/" className="button-primary">Revenir au carnet</Link>
+            <Link href="/#vadrouilles" className="button-primary">Revenir au carnet</Link>
           )}
         </div>
       </>
@@ -317,7 +317,7 @@ export default function ModifierSortie() {
           {sortie.url ? (
             <Link href={sortie.url} className="button-primary">Voir la sortie</Link>
           ) : (
-            <Link href="/" className="button-primary">Revenir au carnet</Link>
+            <Link href="/#vadrouilles" className="button-primary">Revenir au carnet</Link>
           )}
         </div>
       </>
@@ -336,7 +336,7 @@ export default function ModifierSortie() {
 
       <div className="container narrow">
         <div className="page-top">
-          <Link href="/" className="back-link">← Retour au carnet</Link>
+          <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
           <ThemeToggle />
         </div>
 

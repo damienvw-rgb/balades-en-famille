@@ -98,7 +98,7 @@ export default function RidePage({ ride }) {
 
       <div className="container">
         <div className="page-top">
-          <Link href="/" className="back-link">← Retour au carnet</Link>
+          <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
           <ThemeToggle />
         </div>
 

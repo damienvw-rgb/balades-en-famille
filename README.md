@@ -23,6 +23,11 @@ signature « Le slow travel en famille. », le texte d'introduction et deux appe
 à l'action, « Découvrir les vadrouilles » qui descend vers la liste des sorties
 et « Partager la nôtre » qui mène au formulaire de proposition.
 
+La liste des sorties porte l'ancre `#vadrouilles`. C'est la cible du premier
+bouton, et aussi celle de tous les liens « Retour au carnet » et « Revenir au
+carnet » des autres pages : revenir depuis une fiche de sortie doit ramener à
+la liste, pas en haut du bandeau.
+
 La photo de fond est le fichier `public/banniere.jpg`. Elle est posée en fond
 CSS et non dans une balise `img` : tant que ce fichier n'existe pas, le bandeau
 retombe sur un dégradé aux couleurs du site au lieu d'afficher une image cassée.
@@ -30,9 +35,9 @@ retombe sur un dégradé aux couleurs du site au lieu d'afficher une image cass�
 **En dessous de 620 pixels de large, la photo n'est pas affichée du tout.** Le
 bandeau y est presque carré, donc `cover` n'en montrait qu'une bande centrale
 d'à peine la moitié de la largeur : des personnages coupés et aucun paysage
-lisible. Un aplat dégradé prend sa place, réglé par la variable `--hero-flat`,
-et le voile sombre est désactivé puisqu'il n'y a plus rien à assombrir. Le
-téléphone ne télécharge donc jamais l'image.
+lisible. Sans photo, le bandeau n'a plus de fond du tout : il devient un
+en-tête ordinaire posé sur le fond du site, avec le texte à l'encre normale et
+les boutons habituels. Le téléphone ne télécharge donc jamais l'image.
 
 Le cadrage taille beaucoup sur les écrans larges. Sur une source en 2400 x 1200,
 seule la bande située entre 28 et 62 pour cent de la hauteur reste visible en

@@ -113,7 +113,7 @@ export default function SubmitForm() {
       <div className="comment-form-done">
         <h2>Merci !</h2>
         <p>{state.message}</p>
-        <Link href="/" className="button-primary">Revenir au carnet</Link>
+        <Link href="/#vadrouilles" className="button-primary">Revenir au carnet</Link>
       </div>
     );
   }

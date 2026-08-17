@@ -33,9 +33,6 @@
   --hero-glass: rgba(255, 255, 255, 0.14);
   --hero-glass-hover: rgba(255, 255, 255, 0.24);
   --hero-glass-line: rgba(255, 255, 255, 0.55);
-  /* Remplace la photo sur téléphone, où le cadrage très resserré ne rendait
-     rien de lisible du paysage. */
-  --hero-flat: linear-gradient(158deg, #7a4526 0%, #3f5a3c 46%, #2a3f2c 100%);
 
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "Inter", system-ui, sans-serif;
@@ -67,7 +64,6 @@
   --hero-glass: rgba(255, 255, 255, 0.12);
   --hero-glass-hover: rgba(255, 255, 255, 0.2);
   --hero-glass-line: rgba(255, 255, 255, 0.48);
-  --hero-flat: linear-gradient(158deg, #4a2a17 0%, #253424 46%, #18241a 100%);
 }
 
 * { box-sizing: border-box; }
@@ -1107,29 +1103,50 @@ a { color: inherit; text-decoration: none; }
 /* ---------- Adaptations ---------- */
 
 @media (max-width: 620px) {
-  /* Sur téléphone le bandeau garde sa photo mais se resserre, et les deux
-     appels à l'action s'empilent en pleine largeur : côte à côte, les
-     libellés se coupaient au milieu d'un mot. */
   /* Sur téléphone le bandeau abandonne la photo. La boîte y est presque
-     carrée, donc cover ne montrait qu'une bande centrale d'à peine la moitié
-     de la largeur : des personnages coupés et aucun paysage lisible. Un aplat
-     dégradé aux couleurs du site rend mieux et pèse zéro octet. */
+     carrée, donc cover n'en montrait qu'une bande centrale d'à peine la
+     moitié de la largeur : des personnages coupés et aucun paysage lisible.
+     Sans photo, plus de fond du tout : le bandeau devient un en-tête ordinaire
+     posé sur le fond du site, et tout ce qui servait à tenir sur une image
+     tombe. Texte à l'encre normale, plus d'ombres portées, plus de verre
+     dépoli. Le téléphone ne télécharge donc jamais l'image. */
   .hero {
     min-height: 0;
-    padding: 46px 20px 38px;
+    padding: 26px 20px 6px;
+    color: var(--ink);
   }
-  .hero-media {
-    background-color: transparent;
-    background-image: var(--hero-flat);
+  .hero-media, .hero-veil { display: none; }
+
+  .hero-title {
+    letter-spacing: 0.05em;
+    margin-right: -0.05em;
+    text-shadow: none;
   }
-  /* Plus de photo, donc plus rien à assombrir : le voile ne ferait que salir
-     le dégradé. Les ombres portées du texte suffisent au relief. */
-  .hero-veil { display: none; }
-  .hero-title { letter-spacing: 0.05em; margin-right: -0.05em; }
+  .hero-tagline { text-shadow: none; }
+  .hero-tagline::after { background: var(--line); }
+  .hero-lede { color: var(--ink-dim); text-shadow: none; }
   .hero-lede span { display: inline; }
+
+  .hero-tools { top: 12px; right: 14px; }
+  .hero-tools .theme-toggle {
+    border-color: var(--line);
+    background: transparent;
+    color: var(--ink-dim);
+    backdrop-filter: none;
+  }
+  .hero-tools .theme-toggle:hover { border-color: var(--sage); color: var(--ink); }
+
   .hero-actions { flex-direction: column; align-items: stretch; margin-top: 20px; }
   .hero-cta { width: 100%; text-align: center; }
-  .hero-tools { top: 12px; right: 14px; }
+  .hero-cta.solid { box-shadow: none; }
+  .hero-cta.ghost {
+    background: transparent;
+    border-color: var(--line);
+    color: var(--ink-dim);
+    backdrop-filter: none;
+  }
+  .hero-cta.ghost:hover { border-color: var(--sage); color: var(--ink); }
+  .hero-cta:focus-visible { outline-color: var(--rust); }
 
   /* L'en-tête ne contient plus que le bouton de thème : il tient à côté du
      titre. Le passage en colonne lui donnait une ligne entière et laissait

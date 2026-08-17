@@ -146,7 +146,7 @@ export default function Proposer() {
         <Head><title>Proposition envoyée</title></Head>
         <div className="container narrow">
           <div className="site-header"><h1>Merci !</h1><p>{state.message}</p></div>
-          <Link href="/" className="button-primary">Revenir au carnet</Link>
+          <Link href="/#vadrouilles" className="button-primary">Revenir au carnet</Link>
         </div>
       </>
     );
@@ -163,7 +163,7 @@ export default function Proposer() {
 
       <div className="container narrow">
         <div className="page-top">
-          <Link href="/" className="back-link">← Retour au carnet</Link>
+          <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
           <ThemeToggle />
         </div>
 
