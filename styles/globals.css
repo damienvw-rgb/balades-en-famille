@@ -33,6 +33,9 @@
   --hero-glass: rgba(255, 255, 255, 0.14);
   --hero-glass-hover: rgba(255, 255, 255, 0.24);
   --hero-glass-line: rgba(255, 255, 255, 0.55);
+  /* Remplace la photo sur téléphone, où le cadrage très resserré ne rendait
+     rien de lisible du paysage. */
+  --hero-flat: linear-gradient(158deg, #7a4526 0%, #3f5a3c 46%, #2a3f2c 100%);
 
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "Inter", system-ui, sans-serif;
@@ -64,6 +67,7 @@
   --hero-glass: rgba(255, 255, 255, 0.12);
   --hero-glass-hover: rgba(255, 255, 255, 0.2);
   --hero-glass-line: rgba(255, 255, 255, 0.48);
+  --hero-flat: linear-gradient(158deg, #4a2a17 0%, #253424 46%, #18241a 100%);
 }
 
 * { box-sizing: border-box; }
@@ -1106,10 +1110,21 @@ a { color: inherit; text-decoration: none; }
   /* Sur téléphone le bandeau garde sa photo mais se resserre, et les deux
      appels à l'action s'empilent en pleine largeur : côte à côte, les
      libellés se coupaient au milieu d'un mot. */
+  /* Sur téléphone le bandeau abandonne la photo. La boîte y est presque
+     carrée, donc cover ne montrait qu'une bande centrale d'à peine la moitié
+     de la largeur : des personnages coupés et aucun paysage lisible. Un aplat
+     dégradé aux couleurs du site rend mieux et pèse zéro octet. */
   .hero {
     min-height: 0;
     padding: 46px 20px 38px;
   }
+  .hero-media {
+    background-color: transparent;
+    background-image: var(--hero-flat);
+  }
+  /* Plus de photo, donc plus rien à assombrir : le voile ne ferait que salir
+     le dégradé. Les ombres portées du texte suffisent au relief. */
+  .hero-veil { display: none; }
   .hero-title { letter-spacing: 0.05em; margin-right: -0.05em; }
   .hero-lede span { display: inline; }
   .hero-actions { flex-direction: column; align-items: stretch; margin-top: 20px; }

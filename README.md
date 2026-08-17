@@ -27,9 +27,20 @@ La photo de fond est le fichier `public/banniere.jpg`. Elle est posée en fond
 CSS et non dans une balise `img` : tant que ce fichier n'existe pas, le bandeau
 retombe sur un dégradé aux couleurs du site au lieu d'afficher une image cassée.
 
-Pour changer la photo, remplace simplement `public/banniere.jpg`. Une image
-large et en paysage convient le mieux, autour de 2000 pixels de large et moins
-de 400 ko. Le cadrage vertical se règle avec `background-position` sur la règle
+**En dessous de 620 pixels de large, la photo n'est pas affichée du tout.** Le
+bandeau y est presque carré, donc `cover` n'en montrait qu'une bande centrale
+d'à peine la moitié de la largeur : des personnages coupés et aucun paysage
+lisible. Un aplat dégradé prend sa place, réglé par la variable `--hero-flat`,
+et le voile sombre est désactivé puisqu'il n'y a plus rien à assombrir. Le
+téléphone ne télécharge donc jamais l'image.
+
+Le cadrage taille beaucoup sur les écrans larges. Sur une source en 2400 x 1200,
+seule la bande située entre 28 et 62 pour cent de la hauteur reste visible en
+1440 pixels de large. Place l'essentiel au centre.
+
+Pour changer la photo, remplace simplement `public/banniere.jpg`. Vise
+2400 x 1200 pixels en JPEG, moins de 400 ko. Le cadrage vertical se règle
+avec `background-position` sur la règle
 `.hero-media` dans `styles/globals.css`, et l'intensité du voile sombre qui
 garantit la lisibilité du texte avec les variables `--hero-veil-*`.
 
