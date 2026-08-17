@@ -131,8 +131,8 @@ a { color: inherit; text-decoration: none; }
     ),
     linear-gradient(
       180deg,
-      var(--hero-veil-mid) 0%,
-      var(--hero-veil-soft) 34%,
+      var(--hero-veil-strong) 0%,
+      var(--hero-veil-soft) 40%,
       var(--hero-veil-strong) 100%
     );
 }
