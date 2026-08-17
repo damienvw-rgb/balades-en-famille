@@ -243,6 +243,23 @@ La préférence va dans le stockage local du navigateur, **pas dans un cookie** 
 
 Toutes les couleurs passent par des variables CSS définies pour les deux thèmes en tête de `styles/globals.css`. Si tu ajoutes une couleur, ajoute-la aux deux.
 
+### Bouton favoris
+
+L'étoile à côté du bouton de thème rappelle comment garder le site sous la main. Elle **ne pose pas le signet elle-même** : aucun navigateur actuel ne le permet. Les anciennes interfaces qui le faisaient, `window.external.AddFavorite` côté Internet Explorer et `window.sidebar.addPanel` côté Firefox, ont été retirées pour empêcher les sites de s'inviter dans la barre de favoris, et rien ne les a remplacées.
+
+Le bouton affiche donc une bulle avec le bon geste, choisi d'après l'appareil :
+
+| Appareil | Message |
+| --- | --- |
+| Windows et Linux | Ctrl + D |
+| Mac | ⌘ + D |
+| iPhone et iPad | bouton Partager, puis Ajouter aux favoris ou Sur l'écran d'accueil |
+| Android | menu du navigateur, puis l'étoile |
+
+Un iPad récent se présente comme un Mac dans l'`userAgent` : c'est `navigator.maxTouchPoints` qui les départage. La bulle se ferme à l'Échap ou au clic à côté. Rien n'est enregistré, ni en local ni sur le serveur, donc aucun consentement n'est en jeu.
+
+Le bouton est présent sur toutes les pages publiques, mais pas sur `/admin` qui n'a pas vocation à être mise en favori par un visiteur.
+
 ### Fonds de carte
 
 Deux fonds, libres et sans clé d'API, sélectionnables sur chaque carte :
@@ -511,6 +528,7 @@ components/RideCard.jsx          carte d'une sortie sur l'accueil
 components/Participants.jsx      composition du groupe, infobulles au survol
 components/GearPicker.jsx        saisie du matériel et choix du pictogramme
 components/ThemeToggle.jsx       bascule clair et sombre
+components/BookmarkButton.jsx    rappel du geste pour mettre le site en favoris
 
 pages/index.js             accueil
 pages/rides/[slug].js      fiche d'une sortie

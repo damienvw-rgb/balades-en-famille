@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
+import BookmarkButton from "@/components/BookmarkButton";
 
 const SUBJECTS = {
   bug: "Signaler un problème sur le site",
@@ -50,7 +51,10 @@ export default function Contact() {
       <div className="container narrow">
         <div className="page-top">
           <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
-          <ThemeToggle />
+          <div className="page-tools">
+            <ThemeToggle />
+            <BookmarkButton />
+          </div>
         </div>
 
         <header className="site-header compact">

@@ -8,6 +8,7 @@ import ElevationProfile from "@/components/ElevationProfile";
 import Participants from "@/components/Participants";
 import Comments from "@/components/Comments";
 import ThemeToggle from "@/components/ThemeToggle";
+import BookmarkButton from "@/components/BookmarkButton";
 
 const RouteMap = dynamic(() => import("@/components/RouteMap"), { ssr: false });
 
@@ -99,7 +100,10 @@ export default function RidePage({ ride }) {
       <div className="container">
         <div className="page-top">
           <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
-          <ThemeToggle />
+          <div className="page-tools">
+            <ThemeToggle />
+            <BookmarkButton />
+          </div>
         </div>
 
         <div className="ride-detail-header">

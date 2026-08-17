@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
+import BookmarkButton from "@/components/BookmarkButton";
 
 const EDITOR = process.env.NEXT_PUBLIC_LEGAL_NAME || "Damien";
 
@@ -15,7 +16,10 @@ export default function MentionsLegales() {
       <div className="container narrow">
         <div className="page-top">
           <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
-          <ThemeToggle />
+          <div className="page-tools">
+            <ThemeToggle />
+            <BookmarkButton />
+          </div>
         </div>
 
         <header className="site-header compact">

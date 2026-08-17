@@ -6,6 +6,7 @@ import { sortDifficulties } from "@/lib/activities";
 import Filters from "@/components/Filters";
 import RideCard from "@/components/RideCard";
 import ThemeToggle from "@/components/ThemeToggle";
+import BookmarkButton from "@/components/BookmarkButton";
 
 export async function getStaticProps() {
   const rides = getRideSummaries();
@@ -59,6 +60,7 @@ export default function Home({ rides, activities, countries, difficulties }) {
 
         <div className="hero-tools">
           <ThemeToggle />
+          <BookmarkButton />
         </div>
 
         <div className="hero-inner">
