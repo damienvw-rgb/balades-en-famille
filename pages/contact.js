@@ -49,7 +49,7 @@ export default function Contact() {
 
       <div className="container narrow">
         <div className="page-top">
-          <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
+          <Link href="/" className="back-link">← Retour au carnet</Link>
           <div className="page-tools">
             <ThemeToggle />
           </div>
@@ -69,7 +69,7 @@ export default function Contact() {
         {state.status === "sent" ? (
           <div className="comment-form-done">
             <p>{state.message}</p>
-            <Link href="/#vadrouilles" className="button-primary">Revenir au carnet</Link>
+            <Link href="/" className="button-primary">Revenir au carnet</Link>
           </div>
         ) : (
           <form className="submit-form" onSubmit={submit}>

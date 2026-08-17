@@ -47,32 +47,24 @@ export default function Home({ rides, activities, countries, difficulties }) {
         />
       </Head>
 
-      {/* En-tête d'accueil : du texte et rien d'autre. Le titre et sa phrase
-          d'accroche à gauche, les deux actions à droite, sur la même grille
-          que le contenu pour que tout s'aligne verticalement. */}
+      {/* En-tête d'accueil : du texte et rien d'autre. Le titre occupe la
+          première ligne avec la bascule de thème à son extrémité droite, la
+          phrase d'accroche vient dessous. */}
       <header className="home-header">
         <div className="container home-header-inner">
-          <div className="home-header-text">
+          <div className="home-header-top">
             <h1 className="home-title">Familles en vadrouille</h1>
-            <p className="home-lede">
-              Des idées de balades, de voyages et d'aventures pour explorer
-              ensemble, à votre rythme.
-            </p>
-          </div>
-
-          <div className="home-header-actions">
-            <Link href="/proposer" className="button-primary small">
-              Proposer une sortie
-            </Link>
             <ThemeToggle />
           </div>
+
+          <p className="home-lede">
+            Des idées de balades, de voyages et d'aventures pour explorer
+            ensemble, à votre rythme.
+          </p>
         </div>
       </header>
 
-      {/* L'ancre est posée sur la section entière, pas sur les filtres, pour
-          qu'elle existe aussi quand aucune sortie n'est encore publiée : les
-          pages de sortie renvoient toutes vers /#vadrouilles. */}
-      <div className="container" id="vadrouilles">
+      <div className="container">
         {rides.length === 0 ? (
           <p className="empty-state">
             Aucune sortie pour le moment. Ajoute un dossier dans /public/rides/
@@ -109,16 +101,18 @@ export default function Home({ rides, activities, countries, difficulties }) {
           </>
         )}
 
-        {/* Le bouton « Proposer une sortie » est déjà dans l'en-tête : ici il
-            reste un lien de pied de page comme les deux autres. */}
+        {/* « Proposer une sortie » est la seule action du site : elle vit ici,
+            en bouton, une fois les sorties parcourues — et pas noyée parmi les
+            liens de service à sa gauche. */}
         <footer className="site-footer">
           <span>
             <Link href="/mentions-legales">Mentions légales</Link>
             {" · "}
             <Link href="/contact">Contact</Link>
-            {" · "}
-            <Link href="/proposer">Proposer une sortie</Link>
           </span>
+          <Link href="/proposer" className="button-primary small">
+            Proposer une sortie
+          </Link>
         </footer>
       </div>
     </>

@@ -70,14 +70,14 @@ a { color: inherit; text-decoration: none; }
 
 .home-header { padding: 44px 0 30px; }
 
-.home-header-inner {
+/* Le titre et la bascule de thème partagent la première ligne, la phrase
+   d'accroche s'étend dessous sur toute la largeur. */
+.home-header-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 28px;
+  gap: 20px;
 }
-
-.home-header-text { min-width: 0; }
 
 .home-title {
   font-family: var(--font-display);
@@ -97,17 +97,6 @@ a { color: inherit; text-decoration: none; }
   max-width: 54ch;
   margin: 10px 0 0;
 }
-
-.home-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-/* L'ancre visée par les pages de sortie. Une marge de défilement suffit :
-   l'en-tête n'est pas fixe, rien ne recouvre la cible. */
-#vadrouilles { scroll-margin-top: 16px; }
 
 /* ---------- En-tête ---------- */
 
@@ -950,20 +939,14 @@ a { color: inherit; text-decoration: none; }
 /* ---------- Adaptations ---------- */
 
 @media (max-width: 620px) {
-  /* Sur téléphone le titre et sa phrase d'accroche prennent toute la largeur,
-     les actions passent dessous : côte à côte, il ne restait que quelques
-     lettres par ligne au titre. */
+  /* Sur téléphone la bascule de thème reste sur la ligne du titre : elle est
+     assez petite pour ne pas lui manger de place, et lui donner une ligne à
+     elle laissait une large bande vide en haut de l'écran. */
   .home-header { padding: 22px 0 22px; }
 
-  .home-header-inner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
+  .home-header-top { gap: 12px; }
 
   .home-lede { font-size: 0.94rem; }
-
-  .home-header-actions { justify-content: space-between; }
 
   /* L'en-tête ne contient plus que le bouton de thème : il tient à côté du
      titre. Le passage en colonne lui donnait une ligne entière et laissait
