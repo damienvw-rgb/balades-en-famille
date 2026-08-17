@@ -93,7 +93,7 @@ export default function RidePage({ ride }) {
   return (
     <>
       <Head>
-        <title>{ride.title} · Famille en vadrouille</title>
+        <title>{ride.title} · Familles en vadrouille</title>
       </Head>
 
       <div className="container">

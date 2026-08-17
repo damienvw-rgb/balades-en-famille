@@ -1,4 +1,4 @@
-# Famille en vadrouille
+# Familles en vadrouille
 
 Le slow travel en famille. Des idées de balades, de voyages et d'aventures pour explorer ensemble, à votre rythme : carte interactive, profil d'altitude, distance, dénivelé, traces GPX à télécharger. Les visiteurs peuvent proposer leurs propres sorties et commenter. Construit avec Next.js 16, prêt à déployer sur Vercel.
 

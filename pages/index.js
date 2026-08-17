@@ -40,7 +40,7 @@ export default function Home({ rides, activities, countries, difficulties }) {
   return (
     <>
       <Head>
-        <title>Famille en vadrouille</title>
+        <title>Familles en vadrouille</title>
         <meta
           name="description"
           content="Le slow travel en famille. Des idées de balades, de voyages et d'aventures pour explorer ensemble, à votre rythme."
@@ -62,7 +62,7 @@ export default function Home({ rides, activities, countries, difficulties }) {
         </div>
 
         <div className="hero-inner">
-          <h1 className="hero-title">Famille en vadrouille</h1>
+          <h1 className="hero-title">Familles en vadrouille</h1>
           <p className="hero-tagline">Le slow travel en famille.</p>
           {/* Deux blocs plutôt qu'un <br /> : sur téléphone les lignes
               repassent en flux normal et se recollent avec une espace, ce
