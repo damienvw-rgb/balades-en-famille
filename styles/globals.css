@@ -22,18 +22,6 @@
   --accent-soft: rgba(179, 74, 38, 0.08);
   --warn: #a8391a;
 
-  /* Bandeau d'accueil. Le texte est posé sur une photo, il reste donc clair
-     dans les deux thèmes : ces variables existent quand même pour les deux,
-     seule l'intensité du voile change d'un thème à l'autre. */
-  --hero-ink: #ffffff;
-  --hero-ink-dim: rgba(255, 255, 255, 0.86);
-  --hero-veil-strong: rgba(14, 20, 15, 0.58);
-  --hero-veil-mid: rgba(14, 20, 15, 0.3);
-  --hero-veil-soft: rgba(14, 20, 15, 0.08);
-  --hero-glass: rgba(255, 255, 255, 0.14);
-  --hero-glass-hover: rgba(255, 255, 255, 0.24);
-  --hero-glass-line: rgba(255, 255, 255, 0.55);
-
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -55,15 +43,6 @@
   --gold: #d9a441;
   --accent-soft: rgba(217, 102, 60, 0.12);
   --warn: #e8967a;
-
-  --hero-ink: #ffffff;
-  --hero-ink-dim: rgba(255, 255, 255, 0.84);
-  --hero-veil-strong: rgba(8, 12, 9, 0.68);
-  --hero-veil-mid: rgba(8, 12, 9, 0.42);
-  --hero-veil-soft: rgba(8, 12, 9, 0.22);
-  --hero-glass: rgba(255, 255, 255, 0.12);
-  --hero-glass-hover: rgba(255, 255, 255, 0.2);
-  --hero-glass-line: rgba(255, 255, 255, 0.48);
 }
 
 * { box-sizing: border-box; }
@@ -87,189 +66,48 @@ a { color: inherit; text-decoration: none; }
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
-/* ---------- Bandeau d'accueil ---------- */
+/* ---------- En-tête d'accueil ---------- */
 
-.hero {
-  position: relative;
-  isolation: isolate;
+.home-header { padding: 44px 0 30px; }
+
+.home-header-inner {
   display: flex;
   align-items: center;
-  justify-content: center;
-  /* Le fond est en cover : réduire la hauteur recadre la photo au lieu de
-     l'écraser. On garde juste de quoi loger le bloc de texte. */
-  min-height: clamp(300px, 42vh, 440px);
-  padding: 52px 24px 46px;
-  overflow: hidden;
-  text-align: center;
-  color: var(--hero-ink);
+  justify-content: space-between;
+  gap: 28px;
 }
 
-/* Le dégradé sert de repli tant que public/banniere.jpg n'existe pas : un
-   fond CSS absent ne casse rien, contrairement à une balise img. */
-.hero-media {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  background-color: #2a3a2c;
-  background-image: url("/banniere.jpg"),
-    linear-gradient(150deg, #3f5a3c 0%, #6b7c4a 45%, #b34a26 100%);
-  background-size: cover;
-  background-position: center 42%;
-  background-repeat: no-repeat;
-}
+.home-header-text { min-width: 0; }
 
-/* Voile en deux couches : un halo au centre pour détacher le bloc de texte,
-   un dégradé vertical pour asseoir le bas du bandeau sur le contenu. */
-.hero-veil {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(
-      118% 88% at 50% 56%,
-      var(--hero-veil-strong) 0%,
-      var(--hero-veil-mid) 46%,
-      transparent 100%
-    ),
-    linear-gradient(
-      180deg,
-      var(--hero-veil-strong) 0%,
-      var(--hero-veil-soft) 40%,
-      var(--hero-veil-strong) 100%
-    );
-}
-
-.hero-tools {
-  position: absolute;
-  top: 18px;
-  right: 20px;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Les boutons passent en verre dépoli : sur la photo, leurs couleurs
-   d'interface habituelles devenaient illisibles en thème clair. */
-.hero-tools .theme-toggle,
-.hero-tools .bookmark-toggle {
-  border-color: var(--hero-glass-line);
-  background: var(--hero-glass);
-  color: var(--hero-ink);
-  backdrop-filter: blur(6px);
-}
-
-.hero-tools .theme-toggle:hover,
-.hero-tools .bookmark-toggle:hover {
-  border-color: var(--hero-ink);
-  background: var(--hero-glass-hover);
-  color: var(--hero-ink);
-}
-
-.hero-inner {
-  position: relative;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.hero-title {
+.home-title {
   font-family: var(--font-display);
   font-optical-sizing: auto;
   font-weight: 600;
-  font-size: clamp(2rem, 6.4vw, 4rem);
-  line-height: 1.04;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  /* L'interlettrage en capitales ajoute un blanc après la dernière lettre,
-     ce qui décentre le titre. Cette marge négative le compense. */
-  margin: 0 -0.07em 0 0;
+  font-size: clamp(1.9rem, 4.6vw, 2.9rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0;
   text-wrap: balance;
-  text-shadow: 0 2px 24px rgba(8, 12, 9, 0.5);
 }
 
-.hero-tagline {
-  font-family: var(--font-body);
-  font-weight: 500;
-  font-size: clamp(1.05rem, 2.4vw, 1.45rem);
-  letter-spacing: 0.005em;
-  margin: 14px 0 0;
-  text-shadow: 0 1px 16px rgba(8, 12, 9, 0.5);
+.home-lede {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  max-width: 54ch;
+  margin: 10px 0 0;
 }
 
-/* Le filet sépare la signature du texte d'introduction sans ajouter de bruit. */
-.hero-tagline::after {
-  content: "";
-  display: block;
-  width: 56px;
-  height: 1px;
-  margin: 14px auto 0;
-  background: var(--hero-glass-line);
-}
-
-.hero-lede {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: clamp(0.98rem, 1.9vw, 1.12rem);
-  line-height: 1.65;
-  color: var(--hero-ink-dim);
-  margin: 13px auto 0;
-  max-width: 46ch;
-  text-shadow: 0 1px 14px rgba(8, 12, 9, 0.55);
-}
-
-.hero-lede span { display: block; }
-
-.hero-actions {
+.home-header-actions {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 24px;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
-.hero-cta {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
-  padding: 13px 24px;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  display: inline-block;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-}
-
-.hero-cta.solid {
-  background: var(--rust);
-  border-color: var(--rust);
-  color: #fff;
-  box-shadow: 0 6px 20px rgba(8, 12, 9, 0.32);
-}
-
-.hero-cta.solid:hover { filter: brightness(1.08); transform: translateY(-1px); }
-
-.hero-cta.ghost {
-  background: var(--hero-glass);
-  border-color: var(--hero-glass-line);
-  color: var(--hero-ink);
-  backdrop-filter: blur(6px);
-}
-
-.hero-cta.ghost:hover {
-  background: var(--hero-glass-hover);
-  border-color: var(--hero-ink);
-  transform: translateY(-1px);
-}
-
-.hero-cta:focus-visible {
-  outline: 2px solid var(--hero-ink);
-  outline-offset: 3px;
-}
-
-/* Le bandeau étant collé en haut de page, l'ancre doit se caler sous lui
-   sans que le premier filtre passe sous le bord de l'écran. */
-#vadrouilles { scroll-margin-top: 16px; padding-top: 28px; }
+/* L'ancre visée par les pages de sortie. Une marge de défilement suffit :
+   l'en-tête n'est pas fixe, rien ne recouvre la cible. */
+#vadrouilles { scroll-margin-top: 16px; }
 
 /* ---------- En-tête ---------- */
 
@@ -319,8 +157,7 @@ a { color: inherit; text-decoration: none; }
   margin: 0;
 }
 
-.theme-toggle,
-.bookmark-toggle {
+.theme-toggle {
   width: 36px; height: 36px;
   border-radius: 50%;
   border: 1px solid var(--line);
@@ -333,45 +170,14 @@ a { color: inherit; text-decoration: none; }
   flex-shrink: 0;
 }
 
-.theme-toggle:hover,
-.bookmark-toggle:hover { border-color: var(--sage); color: var(--ink); }
+.theme-toggle:hover { border-color: var(--sage); color: var(--ink); }
 .theme-toggle-placeholder { display: inline-block; width: 36px; height: 36px; }
 
-/* Les deux boutons ronds des pages internes, à droite du lien de retour. */
+/* Le bouton rond des pages internes, à droite du lien de retour. */
 .page-tools {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-/* ---------- Bouton favoris ---------- */
-
-.bookmark { position: relative; display: inline-flex; }
-
-/* L'étoile pleine sort du gris d'interface : c'est le seul retour visuel que
-   le bouton peut donner, le navigateur ne dit jamais si le signet a été posé. */
-.bookmark-toggle[aria-expanded="true"] { color: var(--gold); border-color: var(--gold); }
-.hero-tools .bookmark-toggle[aria-expanded="true"] { color: var(--gold); }
-
-/* La bulle d'aide s'aligne sur le bord droit du bouton pour ne jamais déborder
-   de l'écran, y compris quand le bouton est déjà collé à la marge. */
-.bookmark-hint {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 30;
-  width: max-content;
-  max-width: min(280px, calc(100vw - 40px));
-  padding: 10px 13px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--bg-raised);
-  color: var(--ink);
-  box-shadow: var(--card-shadow-hover);
-  font-size: 0.86rem;
-  line-height: 1.45;
-  text-align: left;
-  white-space: normal;
 }
 
 /* ---------- Filtres, sur une seule ligne ---------- */
@@ -381,10 +187,7 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 12px 0 18px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 22px;
+  margin: 0 0 20px;
 }
 
 .filter-select select {
@@ -1147,50 +950,20 @@ a { color: inherit; text-decoration: none; }
 /* ---------- Adaptations ---------- */
 
 @media (max-width: 620px) {
-  /* Sur téléphone le bandeau abandonne la photo. La boîte y est presque
-     carrée, donc cover n'en montrait qu'une bande centrale d'à peine la
-     moitié de la largeur : des personnages coupés et aucun paysage lisible.
-     Sans photo, plus de fond du tout : le bandeau devient un en-tête ordinaire
-     posé sur le fond du site, et tout ce qui servait à tenir sur une image
-     tombe. Texte à l'encre normale, plus d'ombres portées, plus de verre
-     dépoli. Le téléphone ne télécharge donc jamais l'image. */
-  .hero {
-    min-height: 0;
-    padding: 26px 20px 6px;
-    color: var(--ink);
-  }
-  .hero-media, .hero-veil { display: none; }
+  /* Sur téléphone le titre et sa phrase d'accroche prennent toute la largeur,
+     les actions passent dessous : côte à côte, il ne restait que quelques
+     lettres par ligne au titre. */
+  .home-header { padding: 22px 0 22px; }
 
-  .hero-title {
-    letter-spacing: 0.05em;
-    margin-right: -0.05em;
-    text-shadow: none;
+  .home-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
   }
-  .hero-tagline { text-shadow: none; }
-  .hero-tagline::after { background: var(--line); }
-  .hero-lede { color: var(--ink-dim); text-shadow: none; }
-  .hero-lede span { display: inline; }
 
-  .hero-tools { top: 12px; right: 14px; }
-  .hero-tools .theme-toggle {
-    border-color: var(--line);
-    background: transparent;
-    color: var(--ink-dim);
-    backdrop-filter: none;
-  }
-  .hero-tools .theme-toggle:hover { border-color: var(--sage); color: var(--ink); }
+  .home-lede { font-size: 0.94rem; }
 
-  .hero-actions { flex-direction: column; align-items: stretch; margin-top: 20px; }
-  .hero-cta { width: 100%; text-align: center; }
-  .hero-cta.solid { box-shadow: none; }
-  .hero-cta.ghost {
-    background: transparent;
-    border-color: var(--line);
-    color: var(--ink-dim);
-    backdrop-filter: none;
-  }
-  .hero-cta.ghost:hover { border-color: var(--sage); color: var(--ink); }
-  .hero-cta:focus-visible { outline-color: var(--rust); }
+  .home-header-actions { justify-content: space-between; }
 
   /* L'en-tête ne contient plus que le bouton de thème : il tient à côté du
      titre. Le passage en colonne lui donnait une ligne entière et laissait
@@ -1256,5 +1029,4 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   *, html, body { transition: none !important; }
   .ride-card:hover { transform: none; }
-  .hero-cta:hover { transform: none; }
 }

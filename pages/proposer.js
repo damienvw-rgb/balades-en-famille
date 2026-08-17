@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ACTIVITIES, LODGINGS, DIFFICULTIES } from "@/lib/activities";
 import { COUNTRY_NAMES, regionsFor, OTHER } from "@/lib/geo";
 import ThemeToggle from "@/components/ThemeToggle";
-import BookmarkButton from "@/components/BookmarkButton";
 import GearPicker from "@/components/GearPicker";
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
@@ -167,7 +166,6 @@ export default function Proposer() {
           <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
           <div className="page-tools">
             <ThemeToggle />
-            <BookmarkButton />
           </div>
         </div>
 

@@ -1,10 +1,10 @@
 # Familles en vadrouille
 
-Le slow travel en famille. Des idées de balades, de voyages et d'aventures pour explorer ensemble, à votre rythme : carte interactive, profil d'altitude, distance, dénivelé, traces GPX à télécharger. Les visiteurs peuvent proposer leurs propres sorties et commenter. Construit avec Next.js 16, prêt à déployer sur Vercel.
+Des idées de balades, de voyages et d'aventures en famille, pour explorer ensemble, à votre rythme : carte interactive, profil d'altitude, distance, dénivelé, traces GPX à télécharger. Les visiteurs peuvent proposer leurs propres sorties et commenter. Construit avec Next.js 16, prêt à déployer sur Vercel.
 
 ## Sommaire
 
-- [Le bandeau d'accueil](#le-bandeau-daccueil)
+- [L'en-tête d'accueil](#len-tête-daccueil)
 - [Ajouter une sortie](#ajouter-une-sortie)
 - [Les champs en détail](#les-champs-en-détail)
 - [Filtres, thème et cartes](#filtres-thème-et-cartes)
@@ -16,38 +16,24 @@ Le slow travel en famille. Des idées de balades, de voyages et d'aventures pour
 
 ---
 
-## Le bandeau d'accueil
+## L'en-tête d'accueil
 
-La page d'accueil s'ouvre sur un bandeau plein écran : le titre du site, la
-signature « Le slow travel en famille. », le texte d'introduction et deux appels
-à l'action, « Découvrir les vadrouilles » qui descend vers la liste des sorties
-et « Partager la nôtre » qui mène au formulaire de proposition.
+La page d'accueil s'ouvre sur un en-tête en texte seul : le titre du site et sa
+phrase d'introduction à gauche, le bouton « Proposer une sortie » et la bascule
+de thème à droite. Pas de photo, pas de filets décoratifs, rien qui sépare
+l'en-tête de la liste des sorties : les filtres viennent directement en dessous.
 
-La liste des sorties porte l'ancre `#vadrouilles`. C'est la cible du premier
-bouton, et aussi celle de tous les liens « Retour au carnet » et « Revenir au
-carnet » des autres pages : revenir depuis une fiche de sortie doit ramener à
-la liste, pas en haut du bandeau.
+L'en-tête utilise la même grille `.container` que le contenu, tout est donc
+aligné sur la même marge gauche. En dessous de 620 pixels de large, le bloc de
+texte et les deux actions passent l'un sous l'autre.
 
-La photo de fond est le fichier `public/banniere.jpg`. Elle est posée en fond
-CSS et non dans une balise `img` : tant que ce fichier n'existe pas, le bandeau
-retombe sur un dégradé aux couleurs du site au lieu d'afficher une image cassée.
+La liste des sorties porte l'ancre `#vadrouilles`. C'est la cible de tous les
+liens « Retour au carnet » et « Revenir au carnet » des autres pages : revenir
+depuis une fiche de sortie doit ramener à la liste, pas en haut de la page.
 
-**En dessous de 620 pixels de large, la photo n'est pas affichée du tout.** Le
-bandeau y est presque carré, donc `cover` n'en montrait qu'une bande centrale
-d'à peine la moitié de la largeur : des personnages coupés et aucun paysage
-lisible. Sans photo, le bandeau n'a plus de fond du tout : il devient un
-en-tête ordinaire posé sur le fond du site, avec le texte à l'encre normale et
-les boutons habituels. Le téléphone ne télécharge donc jamais l'image.
-
-Le cadrage taille beaucoup sur les écrans larges. Sur une source en 2400 x 1200,
-seule la bande située entre 28 et 62 pour cent de la hauteur reste visible en
-1440 pixels de large. Place l'essentiel au centre.
-
-Pour changer la photo, remplace simplement `public/banniere.jpg`. Vise
-2400 x 1200 pixels en JPEG, moins de 400 ko. Le cadrage vertical se règle
-avec `background-position` sur la règle
-`.hero-media` dans `styles/globals.css`, et l'intensité du voile sombre qui
-garantit la lisibilité du texte avec les variables `--hero-veil-*`.
+Les styles tiennent dans les règles `.home-header*` en tête de
+`styles/globals.css`, et les couleurs viennent des variables de thème
+habituelles : l'en-tête n'a pas de palette à lui.
 
 ---
 
@@ -242,23 +228,6 @@ Le thème clair est le défaut, le bouton en haut à droite bascule vers le somb
 La préférence va dans le stockage local du navigateur, **pas dans un cookie** : rien n'est transmis au serveur, donc aucun bandeau de consentement n'est nécessaire. Un script s'exécute avant le premier rendu pour éviter le clignotement blanc au chargement.
 
 Toutes les couleurs passent par des variables CSS définies pour les deux thèmes en tête de `styles/globals.css`. Si tu ajoutes une couleur, ajoute-la aux deux.
-
-### Bouton favoris
-
-L'étoile à côté du bouton de thème rappelle comment garder le site sous la main. Elle **ne pose pas le signet elle-même** : aucun navigateur actuel ne le permet. Les anciennes interfaces qui le faisaient, `window.external.AddFavorite` côté Internet Explorer et `window.sidebar.addPanel` côté Firefox, ont été retirées pour empêcher les sites de s'inviter dans la barre de favoris, et rien ne les a remplacées.
-
-Le bouton affiche donc une bulle avec le bon geste, choisi d'après l'appareil :
-
-| Appareil | Message |
-| --- | --- |
-| Windows et Linux | Ctrl + D |
-| Mac | ⌘ + D |
-| iPhone et iPad | bouton Partager, puis Ajouter aux favoris ou Sur l'écran d'accueil |
-| Android | menu du navigateur, puis l'étoile |
-
-Un iPad récent se présente comme un Mac dans l'`userAgent` : c'est `navigator.maxTouchPoints` qui les départage. La bulle se ferme à l'Échap ou au clic à côté. Rien n'est enregistré, ni en local ni sur le serveur, donc aucun consentement n'est en jeu.
-
-Le bouton est présent sur toutes les pages publiques, mais pas sur `/admin` qui n'a pas vocation à être mise en favori par un visiteur.
 
 ### Fonds de carte
 
@@ -499,7 +468,6 @@ Si un email n'arrive pas, regarde les indésirables, puis Vercel → **Logs**.
 ## Structure du projet
 
 ```
-public/banniere.jpg                la photo du bandeau d'accueil
 public/rides/<slug>/*.gpx          les traces GPS
 public/rides/<slug>/info.json      titre, activité, lieu, étapes, matériel
 scripts/prepare-rides.mjs          intègre les sorties approuvées, fusionne les GPX
@@ -528,7 +496,6 @@ components/RideCard.jsx          carte d'une sortie sur l'accueil
 components/Participants.jsx      composition du groupe, infobulles au survol
 components/GearPicker.jsx        saisie du matériel et choix du pictogramme
 components/ThemeToggle.jsx       bascule clair et sombre
-components/BookmarkButton.jsx    rappel du geste pour mettre le site en favoris
 
 pages/index.js             accueil
 pages/rides/[slug].js      fiche d'une sortie

@@ -7,7 +7,6 @@ import { COUNTRY_NAMES, regionsFor, OTHER } from "@/lib/geo";
 import { gearEmoji } from "@/lib/gear";
 import { callApi, postJson } from "@/lib/api";
 import ThemeToggle from "@/components/ThemeToggle";
-import BookmarkButton from "@/components/BookmarkButton";
 import GearPicker from "@/components/GearPicker";
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
@@ -260,7 +259,6 @@ export default function ModifierSortie() {
         <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
         <div className="page-tools">
           <ThemeToggle />
-          <BookmarkButton />
         </div>
       </div>
       <header className="site-header compact">
@@ -343,7 +341,6 @@ export default function ModifierSortie() {
           <Link href="/#vadrouilles" className="back-link">← Retour au carnet</Link>
           <div className="page-tools">
             <ThemeToggle />
-            <BookmarkButton />
           </div>
         </div>
 

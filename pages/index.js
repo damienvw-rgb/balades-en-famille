@@ -6,7 +6,6 @@ import { sortDifficulties } from "@/lib/activities";
 import Filters from "@/components/Filters";
 import RideCard from "@/components/RideCard";
 import ThemeToggle from "@/components/ThemeToggle";
-import BookmarkButton from "@/components/BookmarkButton";
 
 export async function getStaticProps() {
   const rides = getRideSummaries();
@@ -44,49 +43,35 @@ export default function Home({ rides, activities, countries, difficulties }) {
         <title>Familles en vadrouille</title>
         <meta
           name="description"
-          content="Le slow travel en famille. Des idées de balades, de voyages et d'aventures pour explorer ensemble, à votre rythme."
+          content="Des idées de balades, de voyages et d'aventures en famille, pour explorer ensemble, à votre rythme."
         />
       </Head>
 
-      {/* Bandeau d'accueil.
-          La photo est posée en fond CSS et non dans une balise img : si
-          public/banniere.jpg est absent, on retombe silencieusement sur le
-          dégradé de repli au lieu d'afficher une image cassée. Le voile sombre
-          par dessus garantit le contraste du texte blanc quelle que soit la
-          zone de la photo qui se retrouve derrière. */}
-      <header className="hero">
-        <div className="hero-media" aria-hidden="true" />
-        <div className="hero-veil" aria-hidden="true" />
+      {/* En-tête d'accueil : du texte et rien d'autre. Le titre et sa phrase
+          d'accroche à gauche, les deux actions à droite, sur la même grille
+          que le contenu pour que tout s'aligne verticalement. */}
+      <header className="home-header">
+        <div className="container home-header-inner">
+          <div className="home-header-text">
+            <h1 className="home-title">Familles en vadrouille</h1>
+            <p className="home-lede">
+              Des idées de balades, de voyages et d'aventures pour explorer
+              ensemble, à votre rythme.
+            </p>
+          </div>
 
-        <div className="hero-tools">
-          <ThemeToggle />
-          <BookmarkButton />
-        </div>
-
-        <div className="hero-inner">
-          <h1 className="hero-title">Familles en vadrouille</h1>
-          <p className="hero-tagline">Le slow travel en famille.</p>
-          {/* Deux blocs plutôt qu'un <br /> : sur téléphone les lignes
-              repassent en flux normal et se recollent avec une espace, ce
-              qu'un saut de ligne masqué ne sait pas faire. */}
-          <p className="hero-lede">
-            <span>Des idées de balades, de voyages et d'aventures</span>{" "}
-            <span>pour explorer ensemble, à votre rythme.</span>
-          </p>
-          <div className="hero-actions">
-            <a href="#vadrouilles" className="hero-cta solid">
-              Découvrir les vadrouilles
-            </a>
-            <Link href="/proposer" className="hero-cta ghost">
-              Partager la nôtre
+          <div className="home-header-actions">
+            <Link href="/proposer" className="button-primary small">
+              Proposer une sortie
             </Link>
+            <ThemeToggle />
           </div>
         </div>
       </header>
 
-      {/* La cible du bouton « Découvrir les vadrouilles ». L'ancre est posée
-          sur la section entière, pas sur les filtres, pour qu'elle existe
-          aussi quand aucune sortie n'est encore publiée. */}
+      {/* L'ancre est posée sur la section entière, pas sur les filtres, pour
+          qu'elle existe aussi quand aucune sortie n'est encore publiée : les
+          pages de sortie renvoient toutes vers /#vadrouilles. */}
       <div className="container" id="vadrouilles">
         {rides.length === 0 ? (
           <p className="empty-state">
@@ -124,15 +109,16 @@ export default function Home({ rides, activities, countries, difficulties }) {
           </>
         )}
 
+        {/* Le bouton « Proposer une sortie » est déjà dans l'en-tête : ici il
+            reste un lien de pied de page comme les deux autres. */}
         <footer className="site-footer">
           <span>
             <Link href="/mentions-legales">Mentions légales</Link>
             {" · "}
             <Link href="/contact">Contact</Link>
+            {" · "}
+            <Link href="/proposer">Proposer une sortie</Link>
           </span>
-          <Link href="/proposer" className="button-primary small">
-            Proposer une sortie
-          </Link>
         </footer>
       </div>
     </>
